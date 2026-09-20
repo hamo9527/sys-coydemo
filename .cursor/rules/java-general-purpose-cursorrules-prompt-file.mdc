@@ -1,0 +1,11 @@
+---
+description: "DEPRECATED for this repo — backend uses java-springboot-mybatisplus-ddd.mdc (Java 17 / Spring Boot 3)"
+globs:
+alwaysApply: false
+---
+# DEPRECATED
+
+Do not follow this file for the 材陆建材项目.
+
+- Backend: `.cursor/rules/java-springboot-mybatisplus-ddd.mdc` (Java 17, Spring Boot 3, MyBatis Plus, MySQL)
+- Docs index: `.cursor/rules/tech_stack_docs.mdc`

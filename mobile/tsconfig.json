@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "strict": true
+  },
+  "exclude": ["node_modules", "unpackage", "dist"]
+}

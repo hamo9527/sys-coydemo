@@ -1,0 +1,99 @@
+---
+description: "Backend rules for Spring Boot 3 + MyBatis Plus + MySQL modular monolith with DDD"
+globs: backend/**/*
+alwaysApply: false
+---
+# Backend: 建材管理系统（进销存 + 微OA + 财务）
+
+## AI Persona
+Senior Java backend developer. Follow SOLID, DRY, KISS, YAGNI, OWASP. Prefer the simplest correct design.
+
+## Tech Stack (authoritative — overrides any JPA/PostgreSQL rules)
+- Java 17, Spring Boot 3.3.x, Maven multi-module
+- MyBatis Plus 3.5.x via `mybatis-plus-bom` + `mybatis-plus-spring-boot3-starter` + `mybatis-plus-jsqlparser` (NOT Spring Data JPA)
+  - Official install: https://baomidou.com/getting-started/install/
+- MySQL 8, Redis, RabbitMQ (add AMQP dependency only when events are implemented)
+- Modular monolith + DDD + REST (frontend/backend separation)
+- Deploy: Docker + Nginx
+
+## Module Map
+| Module | Responsibility |
+|--------|----------------|
+| `cailu-bom-common` | ApiResponse, exceptions, utils, base entities, CORS |
+| `cailu-bom-system` | Auth, user, role, org, dict, file |
+| `cailu-bom-erp` | 进销存：商品/仓库/采购/销售/库存 |
+| `cailu-bom-oa` | 微OA：审批流、请假、公告、任务 |
+| `cailu-bom-finance` | 应收应付、收付款、费用、对账 |
+| `cailu-bom-bootstrap` | Spring Boot 启动入口、全局配置 |
+
+## DDD Layering (per business module)
+```
+interfaces/        RestController + request/response DTO
+application/       ApplicationService (orchestration, transactions)
+domain/            Entity / ValueObject / DomainService / Repository interface
+infrastructure/    Mapper (MyBatis Plus) + RepositoryImpl + Redis/MQ adapters
+```
+
+## Application Logic
+1. Controllers only handle HTTP: validate input, call application service, return `ApiResponse`.
+2. Application services orchestrate use cases; domain services hold pure business rules.
+3. Controllers NEVER inject Mappers/Repositories directly.
+4. Persistence only via Repository interfaces; MyBatis Plus Mappers live in infrastructure.
+5. Controllers ↔ services exchange DTOs only. Domain entities stay inside domain/application.
+6. Money/quantity fields: `BigDecimal`. Never `double`/`float`.
+
+## MyBatis Plus Conventions
+1. DO (data object) annotated with `@TableName`; primary key `@TableId(type = IdType.ASSIGN_ID)`.
+2. Mapper extends `BaseMapper<DO>`; annotate with `@Mapper`.
+3. Soft delete: `@TableLogic` on `deleted` field.
+4. Audit fields: `created_at`, `updated_at`, `created_by`, `updated_by` via MetaObjectHandler.
+5. Complex queries: XML mapper under `resources/mapper/{module}/`.
+6. Multi-table joins return dedicated query DTOs, not domain entities.
+7. Pagination requires `mybatis-plus-jsqlparser` (decoupled since 3.5.9).
+
+## Service
+1. Application service = interface + `*Impl` annotated `@Service`.
+2. Prefer constructor injection.
+3. Multi-step writes: `@Transactional(rollbackFor = Exception.class)`.
+4. Missing entity: throw domain/business exception (handled by GlobalExceptionHandler).
+
+## DTO
+1. Request/Response as Java `record` when immutable; validate in compact constructor or Bean Validation.
+2. Use `@Valid` / `@NotNull` / `@NotBlank` / `@Size` at API boundary.
+
+## RestController
+1. `@RestController` + class-level `@RequestMapping("/api/{module}/...")`.
+2. Resource-oriented paths; no verbs like `/create`, `/update`, `/delete`, `/submit`.
+   - Prefer nouns: e.g. `POST /api/oa/approvals/{id}/submissions`.
+3. Return `ResponseEntity<ApiResponse<T>>` or `ApiResponse<T>`.
+4. HTTP: GET query, POST create, PUT update, DELETE remove.
+
+## ApiResponse
+```java
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ApiResponse<T> {
+  private String result;  // SUCCESS or ERROR
+  private String message;
+  private T data;
+
+  public static <T> ApiResponse<T> success(T data) { ... }
+  public static <T> ApiResponse<T> error(String message) { ... }
+}
+```
+
+## Cross-cutting
+- Auth: JWT + Spring Security (system module) — add jjwt only when login is implemented.
+- Cache: Redis for sessions, dict, stock snapshots where justified.
+- MQ: async events (stock change, approval result, payment posted) — no sync coupling between modules.
+- Inter-module calls: application service APIs or domain events; avoid direct Mapper access across modules.
+- CORS: allow local Vue/Vite origins in common config.
+- Comments: English, only for non-obvious WHY.
+- 500 responses: never leak exception messages to clients; log server-side.
+
+## Do NOT
+- Introduce JPA/Hibernate/PostgreSQL for this project.
+- Put business rules in Controllers or Mappers.
+- Over-abstract with unused ports/adapters beyond the four DDD layers above.
+- Add unused dependencies (hutool/jjwt/amqp) “for later” without a concrete use case.

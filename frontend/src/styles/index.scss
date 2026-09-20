@@ -1,0 +1,85 @@
+:root {
+  --cailu-primary: #2f6bff;
+  --cailu-primary-soft: #e8efff;
+  --cailu-sidebar: #1b2437;
+  --cailu-sidebar-active: #2a3650;
+  --cailu-bg: #f0f2f5;
+  --cailu-panel: #ffffff;
+  --cailu-text: #1f2a37;
+  --cailu-muted: #8a94a6;
+  --cailu-border: #e6eaf0;
+  --cailu-danger: #f56c6c;
+  --cailu-success: #19b26b;
+  --cailu-warning: #f5a623;
+  --el-color-primary: #2f6bff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  color: var(--cailu-text);
+  background: var(--cailu-bg);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page-card {
+  background: var(--cailu-panel);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 4%);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hub-link {
+  color: #3a465a;
+  cursor: pointer;
+  line-height: 2;
+  font-size: 13px;
+}
+
+.hub-link:hover {
+  color: var(--cailu-primary);
+}
+
+.hub-link.is-ready {
+  color: #1f2a37;
+  font-weight: 500;
+}
+
+.stamp-effective {
+  width: 72px;
+  height: 72px;
+  border: 3px solid #19b26b;
+  border-radius: 50%;
+  color: #19b26b;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 18px;
+  transform: rotate(-18deg);
+  opacity: 0.85;
+}

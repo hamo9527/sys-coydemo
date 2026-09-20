@@ -1,0 +1,10 @@
+---
+description: "DEPRECATED for this project — use java-springboot-mybatisplus-ddd.mdc"
+globs:
+alwaysApply: false
+---
+# DEPRECATED
+
+This project's backend uses **Spring Boot 3 + MyBatis Plus + MySQL**, not JPA/PostgreSQL.
+
+Follow: `.cursor/rules/java-springboot-mybatisplus-ddd.mdc`

@@ -1,0 +1,10 @@
+---
+description: "DEPRECATED for this repo — not an Astro/Tailwind project"
+globs:
+alwaysApply: false
+---
+# DEPRECATED
+
+This project does not use Astro or Tailwind as the primary UI stack.
+
+Use: `.cursor/rules/vue-claude-stack.mdc` (Vue 3 + Element Plus)

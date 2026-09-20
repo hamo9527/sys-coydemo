@@ -1,0 +1,11 @@
+---
+description: "DEPRECATED for this repo — use vue-claude-stack.mdc (Vue3/Vite/Element Plus), not React"
+globs:
+alwaysApply: false
+---
+# DEPRECATED
+
+Do not apply React / TanStack / Tailwind rules in this repository.
+
+Authoritative frontend rules: `.cursor/rules/vue-claude-stack.mdc`  
+Docs index: `.cursor/rules/tech_stack_docs.mdc`

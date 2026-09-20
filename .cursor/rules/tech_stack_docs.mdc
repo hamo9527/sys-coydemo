@@ -1,0 +1,66 @@
+---
+description: Always use the latest official documentation for the project's technology stack
+globs:
+alwaysApply: true
+---
+
+# Official Documentation First
+
+## Core Principle
+
+Always use the latest official documentation as the primary source when developing with any technology in this project.
+
+Do not rely on outdated knowledge, deprecated APIs, old tutorials, or third-party articles when official documentation is available.
+
+Source priority:
+
+1. Latest official documentation
+2. Official GitHub repository
+3. Official release notes / changelog
+4. Official migration guides
+5. Trusted community resources
+6. Personal knowledge or assumptions
+
+---
+
+# Identify the Technology Stack
+
+Before implementing a feature, inspect the project to identify frameworks, libraries, languages, runtime/dependency versions, database, and build tools.
+
+Check: `pom.xml`, `package.json`, `docker-compose.yml`, configuration files. Always use the versions actually declared by the project.
+
+---
+
+# Official Documentation Index (this repo)
+
+### Backend (authoritative for `backend/**`)
+- **Spring Boot 3.3**: https://docs.spring.io/spring-boot/docs/3.3.x/reference/html/
+- **Spring Security 6**: https://docs.spring.io/spring-security/reference/
+- **MyBatis-Plus**: https://baomidou.com/getting-started/install/
+- **MySQL 8**: https://dev.mysql.com/doc/refman/8.0/en/
+- Follow `.cursor/rules/java-springboot-mybatisplus-ddd.mdc` over any JPA/PostgreSQL rules.
+
+### Frontend (`frontend/**`)
+- **Vue 3**: https://vuejs.org/guide/introduction.html
+- **Vite**: https://vitejs.dev/guide/
+- **Element Plus**: https://element-plus.org/
+- **TypeScript**: https://www.typescriptlang.org/docs/
+- **Pinia**: https://pinia.vuejs.org/
+
+### Mobile (`mobile/**`)
+- **UniApp**: https://uniapp.dcloud.net.cn/
+
+---
+
+# Use the Latest Compatible Official Documentation
+
+1. Identify the technology and project version.
+2. Use official docs compatible with that version (not blindly the newest major).
+3. Prefer official APIs; do not invent configuration options.
+4. Do not upgrade dependencies unless explicitly requested.
+
+---
+
+# After Implementation
+
+Briefly report which official docs/version were followed, and any unverified assumptions.

@@ -1,0 +1,57 @@
+---
+description: "Vue 3 + TypeScript + Vite + Element Plus for 材陆建材管理系统前端"
+globs: frontend/**/*.{vue,ts,tsx,scss,css},mobile/**/*.{vue,ts,json}
+alwaysApply: false
+---
+You are an expert Vue 3 frontend engineer for this monorepo.
+
+## Stack (authoritative)
+- Web: Vue 3 + TypeScript + Vite + Element Plus + Pinia + Vue Router + Axios
+- Mobile: UniApp (under `mobile/`), sharing `/api/**` contracts with web
+- NOT Nuxt, NOT React, NOT Tailwind as primary UI kit — use Element Plus
+- Official docs: see `tech_stack_docs.mdc` (Vue / Vite / Element Plus / Pinia)
+
+## Core Principles
+- Always use Vue 3 Composition API with `<script setup lang="ts">`
+- Never use Options API, mixins, or `this` in setup
+- Strict TypeScript — no `any`; prefer `unknown` + narrowing
+- Prefer composables for reactive logic; keep views thin
+- Align modules with backend DDD boundaries: `system` / `erp` / `oa` / `finance`
+- Prefer `type` over `interface` unless extending
+
+## Directory Conventions (`frontend/src`)
+- `api/` — one file per backend module, paths without `/api` prefix (http baseURL is `/api`)
+- `types/` — mirror backend View / Request records
+- `views/{erp,oa,finance,system}/` — pages
+- `stores/` — Pinia setup stores
+- `utils/http.ts` — Axios wrapper; unwrap `ApiResponse` (`result === 'SUCCESS'`)
+- Element Plus: on-demand via `unplugin-vue-components` + `unplugin-auto-import` (ConfigProvider for locale)
+
+## Component Rules
+- `defineProps<T>()` / `defineEmits<T>()` with generics
+- One component per file, PascalCase filenames
+- Keep templates clean — complex logic in computed/composables
+- Forms: Element Plus + typed `FormRules`
+
+## State & Routing
+- Pinia setup stores: `defineStore('name', () => { ... })`
+- Use `storeToRefs()` when destructuring store state for templates
+- Route `meta.title` / `meta.module` / `meta.public` (see `types/router.d.ts`); menus in `router/menus.ts`
+
+## API Contract
+```ts
+type ApiResponse<T> = {
+  result: 'SUCCESS' | 'ERROR'
+  message: string
+  data: T
+}
+```
+Do not invent endpoints. Match existing controllers under `backend/cailu-bom-*`.
+Approval submit path: `POST /api/oa/approvals/{id}/submissions` (noun, not `/submit`).
+
+## Do NOT
+- Generate Options API
+- Use `any`
+- Put business rules that belong on the server into the UI
+- Drift from backend field names (camelCase JSON as Spring returns)
+- Re-enable React/Astro/Chrome rules for this repo

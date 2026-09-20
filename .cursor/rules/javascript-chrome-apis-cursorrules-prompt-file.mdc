@@ -1,0 +1,10 @@
+---
+description: "DEPRECATED for this repo — not a Chrome extension project"
+globs:
+alwaysApply: false
+---
+# DEPRECATED
+
+This repository is a 建材管理系统 (Vue3 + Spring Boot), not a Chrome extension.
+
+Use: `.cursor/rules/vue-claude-stack.mdc` / `.cursor/rules/java-springboot-mybatisplus-ddd.mdc`

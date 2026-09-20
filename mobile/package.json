@@ -1,0 +1,10 @@
+{
+  "name": "cailu-bom-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "材陆建材管理系统 · UniApp 移动端骨架（与 frontend 共用 /api 契约）",
+  "scripts": {
+    "dev:h5": "echo \"请用 HBuilderX 或 @dcloudio/vite-plugin-uni 打开本目录\"",
+    "build:h5": "echo \"请用 HBuilderX 或 uni-cli 构建\""
+  }
+}

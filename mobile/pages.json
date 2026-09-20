@@ -1,0 +1,57 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "材陆建材"
+      }
+    },
+    {
+      "path": "pages/erp/products",
+      "style": {
+        "navigationBarTitleText": "商品"
+      }
+    },
+    {
+      "path": "pages/oa/approvals",
+      "style": {
+        "navigationBarTitleText": "审批"
+      }
+    },
+    {
+      "path": "pages/finance/receivables",
+      "style": {
+        "navigationBarTitleText": "应收"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "材陆建材",
+    "navigationBarBackgroundColor": "#16352a",
+    "backgroundColor": "#f3f5f7"
+  },
+  "tabBar": {
+    "color": "#6b746f",
+    "selectedColor": "#1f6b4a",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "工作台"
+      },
+      {
+        "pagePath": "pages/erp/products",
+        "text": "进销存"
+      },
+      {
+        "pagePath": "pages/oa/approvals",
+        "text": "审批"
+      },
+      {
+        "pagePath": "pages/finance/receivables",
+        "text": "财务"
+      }
+    ]
+  }
+}

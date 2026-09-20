@@ -1,0 +1,15 @@
+---
+description: "DEPRECATED for this repo — prefer vue-claude-stack.mdc / java DDD rules (avoids conflicting comment mandates)"
+globs:
+alwaysApply: false
+---
+# DEPRECATED
+
+Generic JS quality prompts conflict with this monorepo’s stack-specific rules
+(e.g. mandatory comments on every function vs “comments only for non-obvious WHY”).
+
+Follow:
+- Frontend: `.cursor/rules/vue-claude-stack.mdc`
+- Backend: `.cursor/rules/java-springboot-mybatisplus-ddd.mdc`
+- Discipline: `.cursor/rules/anti-sycophancy-code-discipline-cursorrules-prompt-file.mdc`
+- Scope: `.cursor/rules/anti-overengineering.mdc`

@@ -1,0 +1,13 @@
+---
+description: "DEPRECATED for this repo — stack is Vue3/TS/Vite/Element Plus + Spring Boot, not React/Node"
+globs:
+alwaysApply: false
+---
+# DEPRECATED
+
+This repository is a 建材管理系统:
+
+- Frontend: Vue 3 + TypeScript + Vite + Element Plus
+- Backend: Spring Boot 3 + MyBatis Plus
+
+Do not apply React/Node/Zod/Zustand rules here. See `tech_stack_docs.mdc` and `vue-claude-stack.mdc` / `java-springboot-mybatisplus-ddd.mdc`.

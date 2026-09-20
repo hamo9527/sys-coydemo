@@ -1,0 +1,31 @@
+---
+description: "MySQL + MyBatis Plus database conventions for cailu BOM backend"
+globs: backend/**/*.{sql,xml,yml}, backend/**/mapper/**/*
+alwaysApply: false
+---
+# Database (MySQL 8 + MyBatis Plus)
+
+## Design
+- InnoDB, utf8mb4, explicit indexes on FK and query hot paths
+- Soft delete via `deleted` TINYINT (0/1) + `@TableLogic`
+- Money/quantity: `DECIMAL(18,4)` — never FLOAT/DOUBLE
+- Primary key: snowflake `BIGINT` (`IdType.ASSIGN_ID`)
+- Audit: `created_at`, `updated_at`, `created_by`, `updated_by`
+
+## Naming
+- Tables: `模块前缀_业务` e.g. `erp_product`, `oa_approval`, `fin_receivable`
+- Columns: snake_case; Java fields camelCase (MyBatis Plus map-underscore-to-camel-case)
+
+## Migrations
+- Schema scripts under `backend/sql/` versioned by date: `V20260813__init.sql`
+- Do not auto-mutate production schema from entities
+
+## MyBatis Plus
+- Manage versions with `mybatis-plus-bom`
+- Include `mybatis-plus-jsqlparser` for pagination (required since 3.5.9)
+- Official: https://baomidou.com/getting-started/install/
+
+## Performance
+- Avoid N+1: batch queries / joins in XML when needed
+- Redis for hot dict and short-lived stock locks where justified
+- Paginate list APIs with MyBatis Plus `Page`
