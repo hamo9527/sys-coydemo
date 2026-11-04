@@ -3,8 +3,33 @@ import type { Id } from '@/types/api'
 export type ProductView = {
   id: Id
   sku: string
+  mnemonicCode: string | null
   name: string
-  unit: string | null
+  brandName: string
+  category: string | null
+  spec: string | null
+  unit: string
+  auxiliaryUnit: string | null
+  auxiliarySpec: string | null
+  packageUnit: string | null
+  packageSpec: string | null
+  unitWeight: number | null
+  minOrderQty: number | null
+  minStock: number | null
+  maxStock: number | null
+  smallColorStock: number | null
+  stockAgeThreshold: number | null
+  slowMovingDays: number | null
+  shelfLifeDays: number | null
+  productAttribute: string
+  virtualProduct: boolean
+  installationIncluded: boolean
+  cloudStoreVisible: boolean
+  productionProcess: string | null
+  productionOrigin: string | null
+  usageLocation: string | null
+  vrUrl: string | null
+  remark: string | null
   purchasePrice: number
   salePrice: number
   status: number
@@ -12,12 +37,35 @@ export type ProductView = {
 
 export type CreateProductRequest = {
   sku: string
+  mnemonicCode?: string
   name: string
+  brandName: string
   category?: string
-  unit?: string
   spec?: string
-  purchasePrice: number
-  salePrice: number
+  unit: string
+  auxiliaryUnit?: string
+  auxiliarySpec?: string
+  packageUnit?: string
+  packageSpec?: string
+  unitWeight?: number
+  minOrderQty?: number
+  minStock?: number
+  maxStock?: number
+  smallColorStock?: number
+  stockAgeThreshold?: number
+  slowMovingDays?: number
+  shelfLifeDays?: number
+  productAttribute: string
+  virtualProduct?: boolean
+  installationIncluded?: boolean
+  cloudStoreVisible?: boolean
+  productionProcess?: string
+  productionOrigin?: string
+  usageLocation?: string
+  vrUrl?: string
+  remark?: string
+  purchasePrice?: number
+  salePrice?: number
 }
 
 export type StockView = {
