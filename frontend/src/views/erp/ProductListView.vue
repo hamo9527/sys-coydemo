@@ -65,7 +65,7 @@
           <el-col :span="12"><el-form-item label="库龄阈值" prop="stockAgeThreshold"><el-input-number v-model="form.stockAgeThreshold" :min="0" :precision="0" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="呆滞天数" prop="obsoleteDays"><el-input-number v-model="form.obsoleteDays" :min="0" :precision="0" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="保质天数" prop="shelfLifeDays"><el-input-number v-model="form.shelfLifeDays" :min="0" :precision="0" /></el-form-item></el-col>
-          <el-col :span="12"><el-form-item label="*商品属性" prop="productAttribute"><el-select v-model="form.productAttribute"><el-option label="普通商品" value="normal" /><el-option label="服务商品" value="service" /><el-option label="组合商品" value="bundle" /></el-select></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="*商品属性" prop="productAttribute"><el-input v-model="form.productAttribute" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="虚拟商品" prop="virtualProduct"><el-switch v-model="form.virtualProduct" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="包安装" prop="installationRequired"><el-switch v-model="form.installationRequired" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="云店可查" prop="cloudStoreVisible"><el-switch v-model="form.cloudStoreVisible" /></el-form-item></el-col>
