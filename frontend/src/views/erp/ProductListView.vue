@@ -7,7 +7,7 @@
 
     <el-form :inline="true" class="query" @submit.prevent="handleSearch">
       <el-form-item label="关键词">
-        <el-input v-model="keyword" placeholder="SKU / 名称" clearable />
+        <el-input v-model="keyword" placeholder="商品编码 / 助记码 / 商品名称 / 品牌" clearable />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" :loading="loading" native-type="submit">查询</el-button>
@@ -15,13 +15,40 @@
     </el-form>
 
     <el-table :data="rows" stripe v-loading="loading" empty-text="暂无商品">
-      <el-table-column prop="id" label="ID" width="160" />
-      <el-table-column prop="sku" label="SKU" min-width="120" />
-      <el-table-column prop="name" label="名称" min-width="140" />
-      <el-table-column prop="unit" label="单位" width="80" />
-      <el-table-column prop="purchasePrice" label="采购价" width="110" />
-      <el-table-column prop="salePrice" label="销售价" width="110" />
-      <el-table-column prop="status" label="状态" width="80" />
+      <el-table-column prop="sku" label="商品编码" fixed="left" min-width="130" />
+      <el-table-column prop="mnemonicCode" label="助记码" min-width="110" />
+      <el-table-column prop="name" label="商品名称" fixed="left" min-width="160" />
+      <el-table-column prop="brandName" label="品牌名称" min-width="130" />
+      <el-table-column prop="category" label="商品类别" min-width="120" />
+      <el-table-column prop="spec" label="商品规格" min-width="120" />
+      <el-table-column prop="unit" label="单位" width="90" />
+      <el-table-column prop="auxiliaryUnit" label="辅助单位" min-width="100" />
+      <el-table-column prop="auxiliarySpec" label="辅助规格" min-width="110" />
+      <el-table-column prop="packageUnit" label="包装单位" min-width="100" />
+      <el-table-column prop="packageSpec" label="包装规格" min-width="110" />
+      <el-table-column prop="unitWeight" label="单重" width="100" />
+      <el-table-column prop="minOrderQty" label="最低起订量" width="110" />
+      <el-table-column prop="minStock" label="最小库存" width="100" />
+      <el-table-column prop="maxStock" label="最大库存" width="100" />
+      <el-table-column prop="smallColorStock" label="小色号库存" width="110" />
+      <el-table-column prop="stockAgeThreshold" label="库龄阈值" width="100" />
+      <el-table-column prop="slowMovingDays" label="呆滞天数" width="100" />
+      <el-table-column prop="shelfLifeDays" label="保质天数" width="100" />
+      <el-table-column prop="productAttribute" label="商品属性" min-width="110" />
+      <el-table-column prop="virtualProduct" label="虚拟商品" width="100">
+        <template #default="{ row }">{{ row.virtualProduct ? '是' : '否' }}</template>
+      </el-table-column>
+      <el-table-column prop="installationIncluded" label="包安装" width="90">
+        <template #default="{ row }">{{ row.installationIncluded ? '是' : '否' }}</template>
+      </el-table-column>
+      <el-table-column prop="cloudStoreVisible" label="云店可查" width="100">
+        <template #default="{ row }">{{ row.cloudStoreVisible ? '是' : '否' }}</template>
+      </el-table-column>
+      <el-table-column prop="productionProcess" label="生产工艺" min-width="120" />
+      <el-table-column prop="productionOrigin" label="生产产地" min-width="120" />
+      <el-table-column prop="usageLocation" label="使用位置" min-width="120" />
+      <el-table-column prop="vrUrl" label="VR地址" min-width="180" />
+      <el-table-column prop="remark" label="备注" min-width="160" />
     </el-table>
 
     <div class="pager">
@@ -35,29 +62,25 @@
       />
     </div>
 
-    <el-dialog v-model="dialogVisible" title="新建商品" width="520px" destroy-on-close>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="96px">
-        <el-form-item label="SKU" prop="sku">
-          <el-input v-model="form.sku" />
-        </el-form-item>
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="form.name" />
-        </el-form-item>
-        <el-form-item label="分类" prop="category">
-          <el-input v-model="form.category" />
-        </el-form-item>
-        <el-form-item label="单位" prop="unit">
-          <el-input v-model="form.unit" placeholder="吨 / 袋 / 米" />
-        </el-form-item>
-        <el-form-item label="规格" prop="spec">
-          <el-input v-model="form.spec" />
-        </el-form-item>
-        <el-form-item label="采购价" prop="purchasePrice">
-          <el-input-number v-model="form.purchasePrice" :min="0" :precision="4" />
-        </el-form-item>
-        <el-form-item label="销售价" prop="salePrice">
-          <el-input-number v-model="form.salePrice" :min="0" :precision="4" />
-        </el-form-item>
+    <el-dialog v-model="dialogVisible" title="新建商品" width="820px" top="5vh" destroy-on-close>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="112px">
+        <el-row :gutter="16">
+          <el-col v-for="field in textFields" :key="field.prop" :span="12">
+            <el-form-item :label="field.label" :prop="field.prop">
+              <el-input v-model="form[field.prop]" :placeholder="'请输入' + field.label" />
+            </el-form-item>
+          </el-col>
+          <el-col v-for="field in numberFields" :key="field.prop" :span="12">
+            <el-form-item :label="field.label" :prop="field.prop">
+              <el-input-number v-model="form[field.prop]" :min="0" :precision="field.precision ?? 0" controls-position="right" />
+            </el-form-item>
+          </el-col>
+          <el-col v-for="field in booleanFields" :key="field.prop" :span="8">
+            <el-form-item :label="field.label" :prop="field.prop">
+              <el-switch v-model="form[field.prop]" />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -86,19 +109,78 @@ const formRef = ref<FormInstance>()
 
 const form = reactive<CreateProductRequest>({
   sku: '',
+  mnemonicCode: '',
   name: '',
+  brandName: '',
   category: '',
-  unit: '吨',
   spec: '',
-  purchasePrice: 0,
-  salePrice: 0,
+  unit: '',
+  auxiliaryUnit: '',
+  auxiliarySpec: '',
+  packageUnit: '',
+  packageSpec: '',
+  unitWeight: undefined,
+  minOrderQty: undefined,
+  minStock: undefined,
+  maxStock: undefined,
+  smallColorStock: undefined,
+  stockAgeThreshold: undefined,
+  slowMovingDays: undefined,
+  shelfLifeDays: undefined,
+  productAttribute: '',
+  virtualProduct: false,
+  installationIncluded: false,
+  cloudStoreVisible: false,
+  productionProcess: '',
+  productionOrigin: '',
+  usageLocation: '',
+  vrUrl: '',
+  remark: '',
 })
 
+const textFields = [
+  { prop: 'sku', label: '商品编码' },
+  { prop: 'mnemonicCode', label: '助记码' },
+  { prop: 'name', label: '商品名称' },
+  { prop: 'brandName', label: '品牌名称' },
+  { prop: 'category', label: '商品类别' },
+  { prop: 'spec', label: '商品规格' },
+  { prop: 'unit', label: '单位' },
+  { prop: 'auxiliaryUnit', label: '辅助单位' },
+  { prop: 'auxiliarySpec', label: '辅助规格' },
+  { prop: 'packageUnit', label: '包装单位' },
+  { prop: 'packageSpec', label: '包装规格' },
+  { prop: 'productAttribute', label: '商品属性' },
+  { prop: 'productionProcess', label: '生产工艺' },
+  { prop: 'productionOrigin', label: '生产产地' },
+  { prop: 'usageLocation', label: '使用位置' },
+  { prop: 'vrUrl', label: 'VR地址' },
+  { prop: 'remark', label: '备注' },
+] as const
+
+const numberFields = [
+  { prop: 'unitWeight', label: '单重', precision: 4 },
+  { prop: 'minOrderQty', label: '最低起订量', precision: 4 },
+  { prop: 'minStock', label: '最小库存', precision: 4 },
+  { prop: 'maxStock', label: '最大库存', precision: 4 },
+  { prop: 'smallColorStock', label: '小色号库存', precision: 4 },
+  { prop: 'stockAgeThreshold', label: '库龄阈值' },
+  { prop: 'slowMovingDays', label: '呆滞天数' },
+  { prop: 'shelfLifeDays', label: '保质天数' },
+] as const
+
+const booleanFields = [
+  { prop: 'virtualProduct', label: '虚拟商品' },
+  { prop: 'installationIncluded', label: '包安装' },
+  { prop: 'cloudStoreVisible', label: '云店可查' },
+] as const
+
 const rules: FormRules<CreateProductRequest> = {
-  sku: [{ required: true, message: '请输入 SKU', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
-  purchasePrice: [{ required: true, message: '请输入采购价', trigger: 'change' }],
-  salePrice: [{ required: true, message: '请输入销售价', trigger: 'change' }],
+  sku: [{ required: true, message: '请输入商品编码', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
+  brandName: [{ required: true, message: '请输入品牌名称', trigger: 'blur' }],
+  unit: [{ required: true, message: '请输入单位', trigger: 'blur' }],
+  productAttribute: [{ required: true, message: '请输入商品属性', trigger: 'blur' }],
 }
 
 async function loadList() {
@@ -128,9 +210,8 @@ function handleSizeChange() {
 
 async function handleCreate() {
   const valid = await formRef.value?.validate().catch(() => false)
-  if (!valid) {
-    return
-  }
+  if (!valid) return
+
   saving.value = true
   try {
     await createProduct({ ...form })
