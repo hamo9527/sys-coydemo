@@ -2,6 +2,8 @@
 -- Apply once to existing cailu_bom databases after V20260813__init.sql.
 USE cailu_bom;
 
+UPDATE erp_product SET unit = '' WHERE unit IS NULL;
+
 ALTER TABLE erp_product
     MODIFY COLUMN unit VARCHAR(16) NOT NULL DEFAULT '' COMMENT '单位';
 
