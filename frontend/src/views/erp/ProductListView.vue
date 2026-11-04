@@ -106,7 +106,7 @@ const form = reactive<CreateProductRequest>({
   auxiliaryUnit: '', auxiliarySpec: '', packagingUnit: '', packagingSpec: '',
   unitWeight: undefined, minimumOrderQty: undefined, minStock: undefined, maxStock: undefined,
   smallColorStock: false, stockAgeThreshold: undefined, obsoleteDays: undefined, shelfLifeDays: undefined,
-  productAttribute: 'normal', virtualProduct: false, installationRequired: false, cloudStoreVisible: false,
+  productAttribute: '', virtualProduct: false, installationRequired: false, cloudStoreVisible: false,
   productionProcess: '', productionOrigin: '', usageLocation: '', vrUrl: '', remark: '',
   purchasePrice: 0, salePrice: 0,
 })
