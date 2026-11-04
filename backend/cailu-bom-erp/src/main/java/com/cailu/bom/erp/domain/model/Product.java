@@ -54,15 +54,6 @@ public class Product {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("name required");
         }
-        if (brandName == null || brandName.isBlank()) {
-            throw new IllegalArgumentException("brand name required");
-        }
-        if (unit == null || unit.isBlank()) {
-            throw new IllegalArgumentException("unit required");
-        }
-        if (productAttribute == null || productAttribute.isBlank()) {
-            throw new IllegalArgumentException("product attribute required");
-        }
         this.id = id;
         this.sku = sku;
         this.mnemonicCode = mnemonicCode;
