@@ -107,7 +107,7 @@ const total = ref(0)
 const rows = ref<ProductView[]>([])
 const formRef = ref<FormInstance>()
 
-const form = reactive<CreateProductRequest>({
+const form = reactive<Record<string, any>>({
   sku: '',
   mnemonicCode: '',
   name: '',
@@ -214,7 +214,7 @@ async function handleCreate() {
 
   saving.value = true
   try {
-    await createProduct({ ...form })
+    await createProduct({ ...form } as CreateProductRequest)
     dialogVisible.value = false
     ElMessage.success('商品已创建')
     await loadList()
