@@ -29,13 +29,41 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
-          <el-input
-            v-model="keyword"
-            class="search"
-            clearable
-            placeholder="搜索商品库存"
-            :prefix-icon="Search"
-          />
+          <div class="search-wrap">
+            <el-input
+              v-model="keyword"
+              class="search"
+              clearable
+              placeholder="搜索系统功能 / 单据 / 报表"
+              :prefix-icon="Search"
+              @focus="searchVisible = true"
+              @keydown="handleSearchKeydown"
+            />
+            <div v-if="searchVisible && filteredSearchItems.length" class="search-dropdown">
+              <button
+                v-for="(item, index) in filteredSearchItems"
+                :key="`${item.path}-${item.title}`"
+                type="button"
+                class="search-option"
+                :class="{ selected: index === searchActiveIndex }"
+                @mousedown.prevent
+                @mouseenter="searchActiveIndex = index"
+                @click="openSearchItem(item)"
+              >
+                <span class="search-option-main">
+                  <span class="search-option-title">{{ item.title }}</span>
+                  <span class="search-option-module">{{ item.module }}</span>
+                </span>
+                <el-icon><ArrowRight /></el-icon>
+              </button>
+            </div>
+            <div
+              v-else-if="searchVisible && keyword.trim()"
+              class="search-dropdown search-empty"
+            >
+              未找到相关系统功能
+            </div>
+          </div>
           <el-button text class="icon-btn">
             <el-icon :size="18"><Calendar /></el-icon>
           </el-button>
@@ -119,6 +147,7 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Aim,
+  ArrowRight,
   Bell,
   Box,
   Calendar,
@@ -154,7 +183,73 @@ const tabsStore = useTabsStore()
 const { displayName } = storeToRefs(userStore)
 const { tabs, refreshKey } = storeToRefs(tabsStore)
 
+type SearchItem = {
+  title: string
+  module: string
+  path: string
+  keywords: string[]
+}
+
 const keyword = ref('')
+const searchVisible = ref(false)
+const searchActiveIndex = ref(0)
+
+const searchItems = computed<SearchItem[]>(() => {
+  const items: SearchItem[] = [
+    { title: '首页', module: '首页', path: '/dashboard', keywords: ['工作台', '主页'] },
+  ]
+
+  for (const menu of sideMenus) {
+    if (menu.path) {
+      items.push({
+        title: menu.title,
+        module: menu.title,
+        path: menu.path,
+        keywords: [menu.key],
+      })
+    } else {
+      items.push({
+        title: menu.title,
+        module: menu.title,
+        path: `/module/${menu.key}`,
+        keywords: [menu.key],
+      })
+    }
+
+    for (const column of menu.hub || []) {
+      for (const link of column.links) {
+        if (!link.path) continue
+        items.push({
+          title: link.title,
+          module: `${menu.title} · ${column.title}`,
+          path: link.path,
+          keywords: [menu.key, column.title, link.ready ? '已实现' : '功能预留'],
+        })
+      }
+    }
+  }
+
+  const unique = new Map<string, SearchItem>()
+  for (const item of items) {
+    const key = `${item.path}::${item.title}`
+    if (!unique.has(key)) unique.set(key, item)
+  }
+  return [...unique.values()]
+})
+
+const filteredSearchItems = computed(() => {
+  const query = keyword.value.trim().toLocaleLowerCase()
+  if (!query) return searchItems.value.slice(0, 8)
+
+  return searchItems.value
+    .filter((item) => {
+      const searchableText = [item.title, item.module, ...item.keywords]
+        .join(' ')
+        .toLocaleLowerCase()
+      return searchableText.includes(query)
+    })
+    .slice(0, 10)
+})
 const context = reactive({
   visible: false,
   x: 0,
@@ -217,6 +312,50 @@ function handleSideClick(item: SideMenuItem) {
     return
   }
   router.push(`/module/${item.key}`)
+}
+
+function openSearchItem(item: SearchItem) {
+  searchVisible.value = false
+  keyword.value = ''
+  searchActiveIndex.value = 0
+  router.push(item.path)
+}
+
+function handleSearchKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    searchVisible.value = false
+    return
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    searchVisible.value = true
+    if (filteredSearchItems.value.length) {
+      searchActiveIndex.value = (searchActiveIndex.value + 1) % filteredSearchItems.value.length
+    }
+    return
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    if (filteredSearchItems.value.length) {
+      searchActiveIndex.value =
+        (searchActiveIndex.value - 1 + filteredSearchItems.value.length) % filteredSearchItems.value.length
+    }
+    return
+  }
+
+  if (event.key === 'Enter' && filteredSearchItems.value.length) {
+    event.preventDefault()
+    openSearchItem(filteredSearchItems.value[searchActiveIndex.value] || filteredSearchItems.value[0])
+  }
+}
+
+function handleSearchOutsideClick(event: MouseEvent) {
+  const target = event.target
+  if (target instanceof Element && !target.closest('.search-wrap')) {
+    searchVisible.value = false
+  }
 }
 
 function handleClose(fullPath: string) {
@@ -295,11 +434,13 @@ function handleLogout() {
 
 onMounted(() => {
   window.addEventListener('click', hideContextMenu)
+  window.addEventListener('click', handleSearchOutsideClick)
   window.addEventListener('blur', hideContextMenu)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('click', hideContextMenu)
+  window.removeEventListener('click', handleSearchOutsideClick)
   window.removeEventListener('blur', hideContextMenu)
 })
 </script>
@@ -387,8 +528,72 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
+.search-wrap {
+  position: relative;
+}
+
 .search {
-  width: 220px;
+  width: 260px;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 3100;
+  width: 320px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid var(--cailu-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(16 24 40 / 12%);
+}
+
+.search-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #3a465a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-option:hover,
+.search-option.selected {
+  background: #f2f5fb;
+  color: var(--cailu-primary);
+}
+
+.search-option-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.search-option-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.search-option-module {
+  color: #8a94a6;
+  font-size: 11px;
+}
+
+.search-empty {
+  padding: 16px;
+  color: #8a94a6;
+  font-size: 13px;
+  text-align: center;
 }
 
 .icon-btn {
