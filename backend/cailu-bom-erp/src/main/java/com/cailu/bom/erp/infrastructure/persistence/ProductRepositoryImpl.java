@@ -38,7 +38,11 @@ public class ProductRepositoryImpl implements ProductRepository {
         if (StringUtils.hasText(keyword)) {
             wrapper.and(w -> w.like(ErpProductDO::getSku, keyword)
                     .or()
-                    .like(ErpProductDO::getName, keyword));
+                    .like(ErpProductDO::getName, keyword)
+                    .or()
+                    .like(ErpProductDO::getMnemonicCode, keyword)
+                    .or()
+                    .like(ErpProductDO::getBrandName, keyword));
         }
         wrapper.orderByDesc(ErpProductDO::getId);
         Page<ErpProductDO> result = erpProductMapper.selectPage(new Page<>(current, pageSize), wrapper);
@@ -50,14 +54,37 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Product save(Product product, String category, String spec) {
+    public Product save(Product product) {
         ErpProductDO row = new ErpProductDO();
         row.setId(product.getId());
         row.setSku(product.getSku());
+        row.setMnemonicCode(product.getMnemonicCode());
         row.setName(product.getName());
+        row.setBrandName(product.getBrandName());
+        row.setCategory(product.getCategory());
+        row.setSpec(product.getSpec());
         row.setUnit(product.getUnit());
-        row.setCategory(category);
-        row.setSpec(spec);
+        row.setAuxiliaryUnit(product.getAuxiliaryUnit());
+        row.setAuxiliarySpec(product.getAuxiliarySpec());
+        row.setPackageUnit(product.getPackageUnit());
+        row.setPackageSpec(product.getPackageSpec());
+        row.setUnitWeight(product.getUnitWeight());
+        row.setMinOrderQty(product.getMinOrderQty());
+        row.setMinStock(product.getMinStock());
+        row.setMaxStock(product.getMaxStock());
+        row.setSmallColorStock(product.getSmallColorStock());
+        row.setStockAgeThreshold(product.getStockAgeThreshold());
+        row.setSlowMovingDays(product.getSlowMovingDays());
+        row.setShelfLifeDays(product.getShelfLifeDays());
+        row.setProductAttribute(product.getProductAttribute());
+        row.setVirtualProduct(product.getVirtualProduct());
+        row.setInstallationIncluded(product.getInstallationIncluded());
+        row.setCloudStoreVisible(product.getCloudStoreVisible());
+        row.setProductionProcess(product.getProductionProcess());
+        row.setProductionOrigin(product.getProductionOrigin());
+        row.setUsageLocation(product.getUsageLocation());
+        row.setVrUrl(product.getVrUrl());
+        row.setRemark(product.getRemark());
         row.setPurchasePrice(product.getPurchasePrice());
         row.setSalePrice(product.getSalePrice());
         row.setStatus(product.getStatus());
@@ -70,7 +97,39 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     private Product toDomain(ErpProductDO row) {
-        return new Product(row.getId(), row.getSku(), row.getName(), row.getUnit(),
-                row.getPurchasePrice(), row.getSalePrice(), row.getStatus());
+        return Product.builder()
+                .id(row.getId())
+                .sku(row.getSku())
+                .mnemonicCode(row.getMnemonicCode())
+                .name(row.getName())
+                .brandName(row.getBrandName())
+                .category(row.getCategory())
+                .spec(row.getSpec())
+                .unit(row.getUnit())
+                .auxiliaryUnit(row.getAuxiliaryUnit())
+                .auxiliarySpec(row.getAuxiliarySpec())
+                .packageUnit(row.getPackageUnit())
+                .packageSpec(row.getPackageSpec())
+                .unitWeight(row.getUnitWeight())
+                .minOrderQty(row.getMinOrderQty())
+                .minStock(row.getMinStock())
+                .maxStock(row.getMaxStock())
+                .smallColorStock(row.getSmallColorStock())
+                .stockAgeThreshold(row.getStockAgeThreshold())
+                .slowMovingDays(row.getSlowMovingDays())
+                .shelfLifeDays(row.getShelfLifeDays())
+                .productAttribute(row.getProductAttribute())
+                .virtualProduct(row.getVirtualProduct())
+                .installationIncluded(row.getInstallationIncluded())
+                .cloudStoreVisible(row.getCloudStoreVisible())
+                .productionProcess(row.getProductionProcess())
+                .productionOrigin(row.getProductionOrigin())
+                .usageLocation(row.getUsageLocation())
+                .vrUrl(row.getVrUrl())
+                .remark(row.getRemark())
+                .purchasePrice(row.getPurchasePrice())
+                .salePrice(row.getSalePrice())
+                .status(row.getStatus())
+                .build();
     }
 }
