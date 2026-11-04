@@ -1,4 +1,7 @@
 -- 扩展商品档案字段；保留原有 SKU、名称、价格和状态字段以兼容现有业务。
+-- 先清理历史空单位，避免将 unit 改为 NOT NULL 时迁移失败。
+UPDATE erp_product SET unit = '' WHERE unit IS NULL;
+
 ALTER TABLE erp_product
     MODIFY COLUMN unit VARCHAR(16) NOT NULL DEFAULT '' COMMENT '基本单位',
     ADD COLUMN mnemonic_code VARCHAR(64) NULL COMMENT '助记码' AFTER sku,
