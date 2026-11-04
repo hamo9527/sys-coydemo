@@ -37,14 +37,30 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
         productRepository.findBySku(command.sku()).ifPresent(p -> {
             throw new BusinessException("sku already exists");
         });
-        Product product = new Product(null, command.sku(), command.name(), command.unit(),
+        Product product = new Product(
+                null, command.sku(), command.mnemonicCode(), command.name(), command.brandName(),
+                command.category(), command.spec(), command.unit(), command.auxiliaryUnit(),
+                command.auxiliarySpec(), command.packagingUnit(), command.packagingSpec(),
+                command.unitWeight(), command.minimumOrderQty(), command.minStock(), command.maxStock(),
+                command.smallColorStock(), command.stockAgeThreshold(), command.obsoleteDays(),
+                command.shelfLifeDays(), command.productAttribute(), command.virtualProduct(),
+                command.installationRequired(), command.cloudStoreVisible(), command.productionProcess(),
+                command.productionOrigin(), command.usageLocation(), command.vrUrl(), command.remark(),
                 command.purchasePrice(), command.salePrice(), 1);
-        Product saved = productRepository.save(product, command.category(), command.spec());
-        return toView(saved);
+        return toView(productRepository.save(product));
     }
 
     private ProductView toView(Product product) {
-        return new ProductView(product.getId(), product.getSku(), product.getName(),
-                product.getUnit(), product.getPurchasePrice(), product.getSalePrice(), product.getStatus());
+        return new ProductView(
+                product.getId(), product.getSku(), product.getMnemonicCode(), product.getName(),
+                product.getBrandName(), product.getCategory(), product.getSpec(), product.getUnit(),
+                product.getAuxiliaryUnit(), product.getAuxiliarySpec(), product.getPackagingUnit(),
+                product.getPackagingSpec(), product.getUnitWeight(), product.getMinimumOrderQty(),
+                product.getMinStock(), product.getMaxStock(), product.getSmallColorStock(),
+                product.getStockAgeThreshold(), product.getObsoleteDays(), product.getShelfLifeDays(),
+                product.getProductAttribute(), product.getVirtualProduct(), product.getInstallationRequired(),
+                product.getCloudStoreVisible(), product.getProductionProcess(), product.getProductionOrigin(),
+                product.getUsageLocation(), product.getVrUrl(), product.getRemark(),
+                product.getPurchasePrice(), product.getSalePrice(), product.getStatus());
     }
 }
