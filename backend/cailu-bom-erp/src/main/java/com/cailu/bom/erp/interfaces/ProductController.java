@@ -39,8 +39,15 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ApiResponse<ProductView>> create(@Valid @RequestBody CreateProductRequest request) {
         CreateProductCommand command = new CreateProductCommand(
-                request.sku(), request.name(), request.category(), request.unit(),
-                request.spec(), request.purchasePrice(), request.salePrice());
+                request.sku(), request.mnemonicCode(), request.name(), request.brandName(),
+                request.category(), request.spec(), request.unit(), request.auxiliaryUnit(),
+                request.auxiliarySpec(), request.packagingUnit(), request.packagingSpec(),
+                request.unitWeight(), request.minimumOrderQty(), request.minStock(), request.maxStock(),
+                request.smallColorStock(), request.stockAgeThreshold(), request.obsoleteDays(),
+                request.shelfLifeDays(), request.productAttribute(), request.virtualProduct(),
+                request.installationRequired(), request.cloudStoreVisible(), request.productionProcess(),
+                request.productionOrigin(), request.usageLocation(), request.vrUrl(), request.remark(),
+                request.purchasePrice(), request.salePrice());
         return ResponseEntity.ok(ApiResponse.success(productApplicationService.create(command)));
     }
 }
