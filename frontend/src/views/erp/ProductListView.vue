@@ -62,14 +62,14 @@
             <el-option label="竖线（|）" value="|" />
           </el-select>
         </div>
-        <div v-if="txtHeaders.length" class="mapping-grid">
+        <el-form v-if="txtHeaders.length" class="mapping-grid" label-position="top">
           <el-form-item v-for="field in importFields" :key="field.key" :label="field.label">
-            <el-select v-model="mapping[field.key]" clearable placeholder="不导入此字段">
+            <el-select v-model="mapping[field.key]" placeholder="不导入此字段">
               <el-option v-for="(header, index) in txtHeaders" :key="index" :label="header || ('第 ' + (index + 1) + ' 列')" :value="String(index)" />
             </el-select>
             <span v-if="field.required" class="required-mark">必填</span>
           </el-form-item>
-        </div>
+        </el-form>
         <p v-if="txtRows.length" class="import-tip">已读取 {{ txtRows.length }} 行，预览前 5 行：</p>
         <el-table v-if="txtPreviewRows.length" :data="txtPreviewRows" size="small" border max-height="220">
           <el-table-column prop="line" label="行" width="55" />
