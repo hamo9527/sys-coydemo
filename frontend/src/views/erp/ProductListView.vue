@@ -152,11 +152,11 @@ const txtDelimiter = ref('tab')
 const txtHeaders = ref<string[]>([])
 const txtRows = ref<string[][]>([])
 const importFields: Array<{ key: keyof ProductImportRow; label: string; required: boolean; aliases: string[] }> = [
-  { key: 'sku', label: '商品编码', required: true, aliases: ['商品编码', '商品编号', 'sku'] },
-  { key: 'name', label: '商品名称', required: true, aliases: ['商品名称', 'name'] },
-  { key: 'brandName', label: '品牌名称', required: true, aliases: ['品牌名称', '品牌', 'brandname'] },
-  { key: 'unit', label: '单位', required: true, aliases: ['单位', '计量单位', 'unit'] },
-  { key: 'productAttribute', label: '商品属性', required: true, aliases: ['商品属性', 'productattribute'] },
+  { key: 'sku', label: '商品编码', required: true, aliases: ['商品编码', '*商品编码', '商品编号', 'sku'] },
+  { key: 'name', label: '商品名称', required: true, aliases: ['商品名称', '*商品名称', 'name'] },
+  { key: 'brandName', label: '品牌名称', required: true, aliases: ['品牌名称', '*品牌名称', '品牌', 'brandname'] },
+  { key: 'unit', label: '单位', required: true, aliases: ['单位', '*单位', '计量单位', 'unit'] },
+  { key: 'productAttribute', label: '商品属性', required: true, aliases: ['商品属性', '*商品属性', 'productattribute'] },
   { key: 'mnemonicCode', label: '助记码', required: false, aliases: ['助记码', 'mnemoniccode'] },
   { key: 'category', label: '商品类别', required: false, aliases: ['商品类别', '商品分类', 'category'] },
   { key: 'spec', label: '商品规格', required: false, aliases: ['商品规格', '规格', 'spec'] },
