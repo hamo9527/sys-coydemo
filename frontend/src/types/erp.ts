@@ -68,7 +68,7 @@ export type CreateProductRequest = {
   salePrice?: number
 }
 
-export type StockView = {
+export type ProductImportRow = {\n  sku: string\n  name: string\n  brandName: string\n  unit: string\n  productAttribute: string\n  mnemonicCode?: string\n  category?: string\n  spec?: string\n  remark?: string\n}\n\nexport type ProductImportResult = {\n  successCount: number\n  failureCount: number\n  errors: string[]\n}\n\nexport type StockView = {
   id: Id
   warehouseId: Id
   productId: Id
