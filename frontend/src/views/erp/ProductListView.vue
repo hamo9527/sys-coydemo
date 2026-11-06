@@ -215,6 +215,10 @@ const rules: FormRules<CreateProductRequest> = {
 
 function openImportDialog() {
   importErrors.value = []
+  excelRows.value = []
+  txtContent.value = ''
+  txtHeaders.value = []
+  txtRows.value = []
   importDialogVisible.value = true
 }
 
@@ -255,6 +259,7 @@ async function handleTxtFileChange(event: Event) {
   const file = input.files?.[0]
   if (!file) return
   txtContent.value = await file.text()
+  input.value = ''
   importErrors.value = []
   parseTxtContent()
 }
