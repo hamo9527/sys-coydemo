@@ -5,7 +5,7 @@ import type {
   CreateProductRequest,
   CreatePurchaseRequest,
   OutboundView,
-  ProductView,
+  ProductView,\n  ProductImportRow,\n  ProductImportResult,
   PurchaseView,
   StockView,
 } from '@/types/erp'
