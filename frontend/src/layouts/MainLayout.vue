@@ -29,13 +29,75 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
-          <el-input
-            v-model="keyword"
-            class="search"
-            clearable
-            placeholder="搜索商品库存"
-            :prefix-icon="Search"
-          />
+          <div class="search-wrap">
+            <el-input
+              v-model="keyword"
+              class="search"
+              clearable
+              placeholder="搜索功能、单据、报表或商品"
+              :prefix-icon="Search"
+              @focus="searchVisible = true"
+              @keydown="handleSearchKeydown"
+            />
+            <div v-if="searchVisible && keyword.trim()" class="search-dropdown">
+              <template v-if="filteredSearchItems.length">
+                <div class="search-section-title">系统功能</div>
+                <button
+                  v-for="(item, index) in filteredSearchItems"
+                  :key="`${item.path}-${item.title}`"
+                  type="button"
+                  class="search-option"
+                  :class="{ selected: index === searchActiveIndex }"
+                  @mousedown.prevent
+                  @mouseenter="searchActiveIndex = index"
+                  @click="openSearchItem(item)"
+                >
+                  <span class="search-option-main">
+                    <span class="search-option-title">{{ item.title }}</span>
+                    <span class="search-option-module">{{ item.module }}</span>
+                  </span>
+                  <span class="search-option-hint">进入功能</span>
+                  <el-icon><ArrowRight /></el-icon>
+                </button>
+              </template>
+
+              <div v-if="productLoading || productResults.length" class="search-section-title">
+                商品
+                <span v-if="productLoading" class="search-loading">正在搜索…</span>
+              </div>
+              <button
+                v-for="(product, index) in productResults"
+                :key="`product-${product.id}`"
+                type="button"
+                class="search-option product-option"
+                :class="{ selected: filteredSearchItems.length + index === searchActiveIndex }"
+                @mousedown.prevent
+                @mouseenter="searchActiveIndex = filteredSearchItems.length + index"
+                @click="openProductResult(product)"
+              >
+                <span class="product-search-icon"><el-icon><Box /></el-icon></span>
+                <span class="search-option-main">
+                  <span class="search-option-title">{{ product.name }}</span>
+                  <span class="search-option-module">
+                    {{ product.sku }} · {{ product.brandName }}<template v-if="product.spec"> · {{ product.spec }}</template>
+                  </span>
+                </span>
+                <span class="search-option-hint">查看商品</span>
+                <el-icon><ArrowRight /></el-icon>
+              </button>
+
+              <div
+                v-if="!filteredSearchItems.length && !productLoading && !productResults.length"
+                class="search-empty"
+              >
+                没有找到匹配的功能或商品
+              </div>
+              <div v-if="productResults.length" class="search-footer">
+                <span>商品搜索结果</span>
+                <span>共显示 {{ productResults.length }} 条</span>
+              </div>
+            </div>
+          </div>
           <el-button text class="icon-btn">
             <el-icon :size="18"><Calendar /></el-icon>
           </el-button>
@@ -119,6 +181,7 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import {
   Aim,
+  ArrowRight,
   Bell,
   Box,
   Calendar,
@@ -144,6 +207,8 @@ import {
 import { sideMenus, type SideMenuItem } from '@/router/menus'
 import { useTabsStore } from '@/stores/tabs'
 import { useUserStore } from '@/stores/user'
+import { listProducts } from '@/api/erp'
+import type { ProductView } from '@/types/erp'
 
 type MenuAction = 'close' | 'refresh' | 'others' | 'all' | 'right' | 'left'
 
@@ -154,7 +219,102 @@ const tabsStore = useTabsStore()
 const { displayName } = storeToRefs(userStore)
 const { tabs, refreshKey } = storeToRefs(tabsStore)
 
+type SearchItem = {
+  title: string
+  module: string
+  path: string
+  keywords: string[]
+}
+
 const keyword = ref('')
+const searchVisible = ref(false)
+const searchActiveIndex = ref(-1)
+const productLoading = ref(false)
+const productResults = ref<ProductView[]>([])
+let productSearchTimer: ReturnType<typeof setTimeout> | undefined
+
+const searchItems = computed<SearchItem[]>(() => {
+  const items: SearchItem[] = [
+    { title: '首页', module: '首页', path: '/dashboard', keywords: ['工作台', '主页'] },
+  ]
+
+  for (const menu of sideMenus) {
+    if (menu.path) {
+      items.push({
+        title: menu.title,
+        module: menu.title,
+        path: menu.path,
+        keywords: [menu.key],
+      })
+    } else {
+      items.push({
+        title: menu.title,
+        module: menu.title,
+        path: `/module/${menu.key}`,
+        keywords: [menu.key],
+      })
+    }
+
+    for (const column of menu.hub || []) {
+      for (const link of column.links) {
+        if (!link.path) continue
+        items.push({
+          title: link.title,
+          module: `${menu.title} · ${column.title}`,
+          path: link.path,
+          keywords: [menu.key, column.title, link.ready ? '已实现' : '功能预留'],
+        })
+      }
+    }
+  }
+
+  const unique = new Map<string, SearchItem>()
+  for (const item of items) {
+    const key = `${item.path}::${item.title}`
+    if (!unique.has(key)) unique.set(key, item)
+  }
+  return [...unique.values()]
+})
+
+const filteredSearchItems = computed(() => {
+  const query = keyword.value.trim().toLocaleLowerCase()
+  if (!query) return []
+
+  return searchItems.value
+    .filter((item) => {
+      const searchableText = [item.title, item.module, ...item.keywords]
+        .join(' ')
+        .toLocaleLowerCase()
+      return searchableText.includes(query)
+    })
+    .slice(0, 8)
+})
+
+const searchResultCount = computed(() => filteredSearchItems.value.length + productResults.value.length)
+
+watch(keyword, (value) => {
+  const query = value.trim()
+  searchActiveIndex.value = -1
+  searchVisible.value = Boolean(query)
+  productResults.value = []
+  productLoading.value = Boolean(query)
+
+  if (productSearchTimer) clearTimeout(productSearchTimer)
+  if (!query) return
+
+  productSearchTimer = setTimeout(async () => {
+    try {
+      const result = await listProducts({ keyword: query, page: 1, size: 6 })
+      if (keyword.value.trim() === query) {
+        productResults.value = result.records
+      }
+    } catch {
+      if (keyword.value.trim() === query) productResults.value = []
+    } finally {
+      if (keyword.value.trim() === query) productLoading.value = false
+    }
+  }, 250)
+})
 const context = reactive({
   visible: false,
   x: 0,
@@ -217,6 +377,65 @@ function handleSideClick(item: SideMenuItem) {
     return
   }
   router.push(`/module/${item.key}`)
+}
+
+function openSearchItem(item: SearchItem) {
+  searchVisible.value = false
+  keyword.value = ''
+  searchActiveIndex.value = -1
+  router.push(item.path)
+}
+
+function openProductResult(product: ProductView) {
+  const productKeyword = product.sku || product.name
+  searchVisible.value = false
+  keyword.value = ''
+  searchActiveIndex.value = -1
+  router.push({ path: '/erp/products', query: { keyword: productKeyword } })
+}
+
+function handleSearchKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    searchVisible.value = false
+    return
+  }
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    searchVisible.value = Boolean(keyword.value.trim())
+    if (searchResultCount.value) {
+      searchActiveIndex.value = (searchActiveIndex.value + 1) % searchResultCount.value
+    }
+    return
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    if (searchResultCount.value) {
+      searchActiveIndex.value =
+        (searchActiveIndex.value - 1 + searchResultCount.value) % searchResultCount.value
+    }
+    return
+  }
+
+  if (event.key === 'Enter' && searchResultCount.value) {
+    event.preventDefault()
+    const index = searchActiveIndex.value < 0 ? 0 : searchActiveIndex.value
+    if (index < filteredSearchItems.value.length) {
+      const item = filteredSearchItems.value[index]
+      if (item) openSearchItem(item)
+    } else {
+      const product = productResults.value[index - filteredSearchItems.value.length]
+      if (product) openProductResult(product)
+    }
+  }
+}
+
+function handleSearchOutsideClick(event: MouseEvent) {
+  const target = event.target
+  if (target instanceof Element && !target.closest('.search-wrap')) {
+    searchVisible.value = false
+  }
 }
 
 function handleClose(fullPath: string) {
@@ -295,12 +514,15 @@ function handleLogout() {
 
 onMounted(() => {
   window.addEventListener('click', hideContextMenu)
+  window.addEventListener('click', handleSearchOutsideClick)
   window.addEventListener('blur', hideContextMenu)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('click', hideContextMenu)
+  window.removeEventListener('click', handleSearchOutsideClick)
   window.removeEventListener('blur', hideContextMenu)
+  if (productSearchTimer) clearTimeout(productSearchTimer)
 })
 </script>
 
@@ -387,8 +609,119 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
+.search-wrap {
+  position: relative;
+}
+
 .search {
-  width: 220px;
+  width: 260px;
+}
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 3100;
+  width: 390px;
+  max-height: 440px;
+  overflow-y: auto;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--cailu-border);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgb(16 24 40 / 16%);
+}
+
+.search-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px 5px;
+  color: #8a94a6;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.search-loading {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.search-option-hint {
+  margin-left: auto;
+  color: #9aa4b2;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.product-option {
+  justify-content: flex-start;
+}
+
+.product-search-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #eef4ff;
+  color: var(--cailu-primary);
+}
+
+.search-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px 3px;
+  border-top: 1px solid #edf0f5;
+  color: #9aa4b2;
+  font-size: 11px;
+}
+
+.search-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #3a465a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.search-option:hover,
+.search-option.selected {
+  background: #f2f5fb;
+  color: var(--cailu-primary);
+}
+
+.search-option-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.search-option-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.search-option-module {
+  color: #8a94a6;
+  font-size: 11px;
+}
+
+.search-empty {
+  padding: 16px;
+  color: #8a94a6;
+  font-size: 13px;
+  text-align: center;
 }
 
 .icon-btn {
