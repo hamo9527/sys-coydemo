@@ -5,7 +5,9 @@ import type {
   CreateProductRequest,
   CreatePurchaseRequest,
   OutboundView,
-  ProductView,\n  ProductImportRow,\n  ProductImportResult,
+  ProductView,
+  ProductImportRow,
+  ProductImportResult,
   PurchaseView,
   StockView,
 } from '@/types/erp'
@@ -20,6 +22,16 @@ export function getProduct(id: string | number) {
 
 export function createProduct(data: CreateProductRequest) {
   return http.post<ProductView>('/erp/products', data)
+}
+
+export function importProducts(rows: ProductImportRow[]) {
+  return http.post<ProductImportResult>('/erp/products/imports', rows)
+}
+
+export function importProductsExcel(file: File) {
+  const data = new FormData()
+  data.append('file', file)
+  return http.post<ProductImportResult>('/erp/products/imports/excel', data)
 }
 
 export function listStocks(params: {
