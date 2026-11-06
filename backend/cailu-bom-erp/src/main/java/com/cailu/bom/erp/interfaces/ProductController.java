@@ -86,14 +86,13 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(productApplicationService.importProducts(rows)));
     }
 
-    @PostMapping(value = "/imports/excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<ProductImportResult>> importExcel(
+    @PostMapping(value = "/imports/excel/preview", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<List<ProductImportRow>>> previewExcel(
             @RequestPart("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             throw new IllegalArgumentException("请选择 Excel 文件");
         }
-        List<ProductImportRow> rows = readExcel(file);
-        return ResponseEntity.ok(ApiResponse.success(productApplicationService.importProducts(rows)));
+        return ResponseEntity.ok(ApiResponse.success(readExcel(file)));
     }
 
     private List<ProductImportRow> readExcel(MultipartFile file) throws IOException {
