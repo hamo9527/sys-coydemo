@@ -2,7 +2,7 @@
   <div class="page-card">
     <div class="page-header">
       <h2>商品档案</h2>
-      <el-button type="primary" @click="dialogVisible = true">新建商品</el-button>
+      <div class="page-actions"><el-button @click="openImportDialog">导入商品</el-button><el-button type="primary" @click="dialogVisible = true">新建商品</el-button></div>
     </div>
     <el-form :inline="true" class="query" @submit.prevent="handleSearch">
       <el-form-item label="关键词">
@@ -43,6 +43,52 @@
     <div class="pager">
       <el-pagination v-model:current-page="page" v-model:page-size="size" layout="total, prev, pager, next" :total="total" @current-change="loadList" @size-change="handleSizeChange" />
     </div>
+    <el-dialog v-model="importDialogVisible" title="导入商品" width="820px" destroy-on-close>
+      <el-radio-group v-model="importMode" class="import-mode">
+        <el-radio-button value="excel">Excel 表格</el-radio-button>
+        <el-radio-button value="txt">TXT 文本</el-radio-button>
+      </el-radio-group>
+      <template v-if="importMode === 'excel'">
+        <p class="import-tip">支持 .xlsx 文件，第一行为表头。必需列：商品编码、商品名称、品牌名称、单位、商品属性。</p>
+        <input type="file" accept=".xlsx" @change="handleExcelFileChange" />
+      </template>
+      <template v-else>
+        <p class="import-tip">TXT 第一行为列名，支持制表符、逗号或竖线分隔。请将文件列名对应到商品字段。</p>
+        <div class="txt-toolbar">
+          <input type="file" accept=".txt,.tsv,.csv" @change="handleTxtFileChange" />
+          <el-select v-model="txtDelimiter" style="width: 150px" @change="parseTxtContent">
+            <el-option label="制表符（Tab）" value="tab" />
+            <el-option label="逗号（,）" value="," />
+            <el-option label="竖线（|）" value="|" />
+          </el-select>
+        </div>
+        <div v-if="txtHeaders.length" class="mapping-grid">
+          <el-form-item v-for="field in importFields" :key="field.key" :label="field.label">
+            <el-select v-model="mapping[field.key]" clearable placeholder="不导入此字段">
+              <el-option v-for="(header, index) in txtHeaders" :key="index" :label="header || ('第 ' + (index + 1) + ' 列')" :value="String(index)" />
+            </el-select>
+            <span v-if="field.required" class="required-mark">必填</span>
+          </el-form-item>
+        </div>
+        <p v-if="txtRows.length" class="import-tip">已读取 {{ txtRows.length }} 行，预览前 5 行：</p>
+        <el-table v-if="txtPreviewRows.length" :data="txtPreviewRows" size="small" border max-height="220">
+          <el-table-column prop="line" label="行" width="55" />
+          <el-table-column prop="sku" label="商品编码" />
+          <el-table-column prop="name" label="商品名称" />
+          <el-table-column prop="brandName" label="品牌名称" />
+          <el-table-column prop="unit" label="单位" width="80" />
+          <el-table-column prop="productAttribute" label="商品属性" />
+        </el-table>
+      </template>
+      <el-alert v-if="importErrors.length" type="warning" :closable="false" title="部分数据未导入" class="import-errors">
+        <div v-for="(error, index) in importErrors" :key="index">{{ error }}</div>
+      </el-alert>
+      <template #footer>
+        <el-button @click="importDialogVisible = false">关闭</el-button>
+        <el-button v-if="importMode === 'txt'" type="primary" :loading="importLoading" :disabled="!txtRows.length" @click="handleTxtImport">开始导入</el-button>
+      </template>
+    </el-dialog>
+
     <el-dialog v-model="dialogVisible" title="新建商品" width="900px" destroy-on-close>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
         <el-row :gutter="16">
