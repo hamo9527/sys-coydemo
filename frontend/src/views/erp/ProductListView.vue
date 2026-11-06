@@ -231,7 +231,7 @@ async function downloadExcelTemplate() {
 }
 
 function downloadTxtTemplate() {
-  const headers = ['商品编码', '商品名称', '品牌名称', '单位', '商品属性', '助记码', '商品类别', '商品规格', '备注']
+  const headers = ['*商品编码', '*商品名称', '*品牌名称', '*单位', '*商品属性', '助记码', '商品类别', '商品规格', '备注']
   const content = '\uFEFF' + headers.join('\t') + '\r\n'
   saveBlob(new Blob([content], { type: 'text/plain;charset=utf-8' }), '商品档案导入模板.txt')
 }
