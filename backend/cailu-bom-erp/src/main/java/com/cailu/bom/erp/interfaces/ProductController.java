@@ -39,11 +39,11 @@ import java.util.Map;
 public class ProductController {
 
     private static final Map<String, List<String>> IMPORT_HEADERS = Map.of(
-            "sku", List.of("商品编码", "商品编号", "sku"),
-            "name", List.of("商品名称", "name"),
-            "brandName", List.of("品牌名称", "品牌", "brandname"),
-            "unit", List.of("单位", "计量单位", "unit"),
-            "productAttribute", List.of("商品属性", "productattribute"),
+            "sku", List.of("商品编码", "*商品编码", "商品编号", "sku"),
+            "name", List.of("商品名称", "*商品名称", "name"),
+            "brandName", List.of("品牌名称", "*品牌名称", "品牌", "brandname"),
+            "unit", List.of("单位", "*单位", "计量单位", "unit"),
+            "productAttribute", List.of("商品属性", "*商品属性", "productattribute"),
             "mnemonicCode", List.of("助记码", "mnemoniccode"),
             "category", List.of("商品类别", "商品分类", "category"),
             "spec", List.of("商品规格", "规格", "spec"),
