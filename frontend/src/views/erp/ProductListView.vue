@@ -85,16 +85,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
+import { useRoute } from 'vue-router'
 import { createProduct, listProducts } from '@/api/erp'
 import type { CreateProductRequest, ProductView } from '@/types/erp'
 
+const route = useRoute()
 const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
-const keyword = ref('')
+const keyword = ref(typeof route.query.keyword === 'string' ? route.query.keyword : '')
 const page = ref(1)
 const size = ref(10)
 const total = ref(0)
@@ -153,6 +155,15 @@ async function handleCreate() {
     saving.value = false
   }
 }
+
+watch(
+  () => route.query.keyword,
+  (value) => {
+    keyword.value = typeof value === 'string' ? value : ''
+    page.value = 1
+    void loadList()
+  },
+)
 
 onMounted(() => {
   void loadList()
