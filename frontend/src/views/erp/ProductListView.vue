@@ -222,7 +222,8 @@ function saveBlob(blob: Blob, filename: string) {
   document.body.appendChild(link)
   link.click()
   link.remove()
-  URL.revokeObjectURL(url)
+  // 等待浏览器开始读取 Blob 后再释放 URL，避免部分浏览器中下载被取消
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 async function downloadExcelTemplate() {
