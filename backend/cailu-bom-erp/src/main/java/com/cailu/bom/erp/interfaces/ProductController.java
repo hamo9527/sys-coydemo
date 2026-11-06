@@ -15,6 +15,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +32,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +85,37 @@ public class ProductController {
                 request.productionOrigin(), request.usageLocation(), request.vrUrl(), request.remark(),
                 request.purchasePrice(), request.salePrice());
         return ResponseEntity.ok(ApiResponse.success(productApplicationService.create(command)));
+    }
+
+
+    @GetMapping("/imports/excel/template")
+    public ResponseEntity<byte[]> downloadExcelTemplate() throws IOException {
+        String[] headers = {"商品编码", "商品名称", "品牌名称", "单位", "商品属性",
+                "助记码", "商品类别", "商品规格", "备注"};
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("商品档案导入模板");
+            Row header = sheet.createRow(0);
+            CellStyle style = workbook.createCellStyle();
+            Font font = workbook.createFont();
+            font.setBold(true);
+            font.setColor(IndexedColors.WHITE.getIndex());
+            style.setFont(font);
+            style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+            style.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+            for (int i = 0; i < headers.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = header.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(style);
+                sheet.setColumnWidth(i, Math.min(40, Math.max(14, headers[i].length() * 2 + 4)) * 256);
+            }
+            sheet.createFreezePane(0, 1);
+            workbook.write(output);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=product-import-template.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(output.toByteArray());
+        }
     }
 
     @PostMapping("/imports")
