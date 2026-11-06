@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductApplicationServiceImpl implements ProductApplicationService {
@@ -34,8 +37,29 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ProductView create(CreateProductCommand command) {
+        return toView(createProduct(command));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProductImportResult importProducts(List<CreateProductCommand> commands) {
+        int successCount = 0;
+        List<String> errors = new ArrayList<>();
+        for (int i = 0; i < commands.size(); i++) {
+            CreateProductCommand command = commands.get(i);
+            try {
+                createProduct(command);
+                successCount++;
+            } catch (BusinessException | IllegalArgumentException exception) {
+                errors.add("第 " + (i + 1) + " 行：" + exception.getMessage());
+            }
+        }
+        return new ProductImportResult(successCount, errors.size(), errors);
+    }
+
+    private Product createProduct(CreateProductCommand command) {
         productRepository.findBySku(command.sku()).ifPresent(p -> {
-            throw new BusinessException("sku already exists");
+            throw new BusinessException("商品编码已存在：" + command.sku());
         });
         Product product = new Product(
                 null, command.sku(), command.mnemonicCode(), command.name(), command.brandName(),
@@ -47,7 +71,7 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
                 command.installationRequired(), command.cloudStoreVisible(), command.productionProcess(),
                 command.productionOrigin(), command.usageLocation(), command.vrUrl(), command.remark(),
                 command.purchasePrice(), command.salePrice(), 1);
-        return toView(productRepository.save(product));
+        return productRepository.save(product);
     }
 
     private ProductView toView(Product product) {
