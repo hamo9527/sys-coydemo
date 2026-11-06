@@ -28,7 +28,11 @@ export function importProducts(rows: ProductImportRow[]) {
   return http.post<ProductImportResult>('/erp/products/imports', rows)
 }
 
-export function downloadProductExcelTemplate() {\n  return http.get<Blob>('/erp/products/imports/excel/template', { responseType: 'blob' })\n}\n\nexport function previewProductsExcel(file: File) {
+export function downloadProductExcelTemplate() {
+  return http.get<Blob>('/erp/products/imports/excel/template', { responseType: 'blob' })
+}
+
+export function previewProductsExcel(file: File) {
   const data = new FormData()
   data.append('file', file)
   return http.post<ProductImportRow[]>('/erp/products/imports/excel/preview', data)
