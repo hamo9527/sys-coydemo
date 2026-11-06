@@ -28,10 +28,10 @@ export function importProducts(rows: ProductImportRow[]) {
   return http.post<ProductImportResult>('/erp/products/imports', rows)
 }
 
-export function importProductsExcel(file: File) {
+export function previewProductsExcel(file: File) {
   const data = new FormData()
   data.append('file', file)
-  return http.post<ProductImportResult>('/erp/products/imports/excel', data)
+  return http.post<ProductImportRow[]>('/erp/products/imports/excel/preview', data)
 }
 
 export function listStocks(params: {
