@@ -131,17 +131,50 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useRoute } from 'vue-router'
-import { createProduct, listProducts } from '@/api/erp'
-import type { CreateProductRequest, ProductView } from '@/types/erp'
+import { createProduct, importProducts, importProductsExcel, listProducts } from '@/api/erp'
+import type { CreateProductRequest, ProductImportRow, ProductImportResult, ProductView } from '@/types/erp'
 
 const route = useRoute()
 const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
+
+const importDialogVisible = ref(false)
+const importMode = ref<'excel' | 'txt'>('excel')
+const importLoading = ref(false)
+const importErrors = ref<string[]>([])
+const txtContent = ref('')
+const txtDelimiter = ref('tab')
+const txtHeaders = ref<string[]>([])
+const txtRows = ref<string[][]>([])
+const importFields: Array<{ key: keyof ProductImportRow; label: string; required: boolean; aliases: string[] }> = [
+  { key: 'sku', label: '商品编码', required: true, aliases: ['商品编码', '商品编号', 'sku'] },
+  { key: 'name', label: '商品名称', required: true, aliases: ['商品名称', 'name'] },
+  { key: 'brandName', label: '品牌名称', required: true, aliases: ['品牌名称', '品牌', 'brandname'] },
+  { key: 'unit', label: '单位', required: true, aliases: ['单位', '计量单位', 'unit'] },
+  { key: 'productAttribute', label: '商品属性', required: true, aliases: ['商品属性', 'productattribute'] },
+  { key: 'mnemonicCode', label: '助记码', required: false, aliases: ['助记码', 'mnemoniccode'] },
+  { key: 'category', label: '商品类别', required: false, aliases: ['商品类别', '商品分类', 'category'] },
+  { key: 'spec', label: '商品规格', required: false, aliases: ['商品规格', '规格', 'spec'] },
+  { key: 'remark', label: '备注', required: false, aliases: ['备注', 'remark'] },
+]
+const mapping = reactive<Record<keyof ProductImportRow, string>>({
+  sku: '', name: '', brandName: '', unit: '', productAttribute: '',
+  mnemonicCode: '', category: '', spec: '', remark: '',
+})
+const txtPreviewRows = computed(() => txtRows.value.slice(0, 5).map((row, index) => ({
+  line: index + 2,
+  sku: mappedValue(row, 'sku'),
+  name: mappedValue(row, 'name'),
+  brandName: mappedValue(row, 'brandName'),
+  unit: mappedValue(row, 'unit'),
+  productAttribute: mappedValue(row, 'productAttribute'),
+})))
+
 const keyword = ref(typeof route.query.keyword === 'string' ? route.query.keyword : '')
 const page = ref(1)
 const size = ref(10)
@@ -165,6 +198,99 @@ const rules: FormRules<CreateProductRequest> = {
   brandName: [{ required: true, message: '请输入品牌名称', trigger: 'blur' }],
   unit: [{ required: true, message: '请输入单位', trigger: 'blur' }],
   productAttribute: [{ required: true, message: '请选择商品属性', trigger: 'change' }],
+}
+
+
+function openImportDialog() {
+  importErrors.value = []
+  importDialogVisible.value = true
+}
+
+function normalizeHeader(value: string) {
+  return value.trim().replace(/\\s+/g, '').toLowerCase()
+}
+
+async function handleExcelFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  importLoading.value = true
+  importErrors.value = []
+  try {
+    const result = await importProductsExcel(file)
+    showImportResult(result)
+    await loadList()
+  } finally {
+    importLoading.value = false
+    input.value = ''
+  }
+}
+
+async function handleTxtFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  txtContent.value = await file.text()
+  importErrors.value = []
+  parseTxtContent()
+}
+
+function parseTxtContent() {
+  const lines = txtContent.value.replace(/^\\uFEFF/, '').split(/\\r?\\n/).filter((line) => line.trim())
+  if (!lines.length) {
+    txtHeaders.value = []
+    txtRows.value = []
+    return
+  }
+  const delimiter = txtDelimiter.value === 'tab' ? '\\t' : txtDelimiter.value
+  txtHeaders.value = lines[0].split(delimiter).map((value) => value.trim())
+  txtRows.value = lines.slice(1).map((line) => line.split(delimiter).map((value) => value.trim()))
+  for (const field of importFields) {
+    const index = txtHeaders.value.findIndex((header) => field.aliases.includes(normalizeHeader(header)))
+    mapping[field.key] = index >= 0 ? String(index) : ''
+  }
+}
+
+function mappedValue(row: string[], key: keyof ProductImportRow) {
+  const column = mapping[key]
+  return column === '' ? '' : (row[Number(column)] || '').trim()
+}
+
+function showImportResult(result: ProductImportResult) {
+  importErrors.value = result.errors
+  if (result.failureCount === 0) {
+    ElMessage.success('导入完成，成功 ' + result.successCount + ' 条')
+  } else {
+    ElMessage.warning('导入完成，成功 ' + result.successCount + ' 条，失败 ' + result.failureCount + ' 条')
+  }
+}
+
+async function handleTxtImport() {
+  const missing = importFields.filter((field) => field.required && mapping[field.key] === '')
+  if (missing.length) {
+    ElMessage.warning('请先映射必填列：' + missing.map((field) => field.label).join('、'))
+    return
+  }
+  const rows: ProductImportRow[] = txtRows.value.map((row) => ({
+    sku: mappedValue(row, 'sku'),
+    name: mappedValue(row, 'name'),
+    brandName: mappedValue(row, 'brandName'),
+    unit: mappedValue(row, 'unit'),
+    productAttribute: mappedValue(row, 'productAttribute'),
+    mnemonicCode: mappedValue(row, 'mnemonicCode'),
+    category: mappedValue(row, 'category'),
+    spec: mappedValue(row, 'spec'),
+    remark: mappedValue(row, 'remark'),
+  }))
+  importLoading.value = true
+  importErrors.value = []
+  try {
+    const result = await importProducts(rows)
+    showImportResult(result)
+    await loadList()
+  } finally {
+    importLoading.value = false
+  }
 }
 
 async function loadList() {
@@ -217,6 +343,14 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.page-actions { display: flex; gap: 8px; }
 .query { margin-bottom: 8px; }
+.import-mode { margin-bottom: 12px; }
+.import-tip { color: var(--el-text-color-secondary); font-size: 13px; margin: 8px 0 12px; }
+.txt-toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.mapping-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+.mapping-grid :deep(.el-form-item) { margin-bottom: 10px; }
+.required-mark { color: var(--el-color-danger); margin-left: 8px; font-size: 12px; }
+.import-errors { margin-top: 12px; max-height: 180px; overflow: auto; }
 .pager { display: flex; justify-content: flex-end; margin-top: 16px; }
 </style>
