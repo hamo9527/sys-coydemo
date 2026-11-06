@@ -50,7 +50,7 @@
       </el-radio-group>
       <template v-if="importMode === 'excel'">
         <p class="import-tip">支持 .xlsx 文件，第一行为表头。必需列：商品编码、商品名称、品牌名称、单位、商品属性。</p>
-        <input type="file" accept=".xlsx" @change="handleExcelFileChange" />
+        <div class="template-actions"><el-button link type="primary" @click="downloadExcelTemplate">下载 Excel 模板</el-button><input type="file" accept=".xlsx" @change="handleExcelFileChange" /></div>
         <p v-if="excelRows.length" class="import-tip">已读取 {{ excelRows.length }} 行，预览前 5 行：</p>
         <el-table v-if="excelPreviewRows.length" :data="excelPreviewRows" size="small" border max-height="220">
           <el-table-column prop="line" label="行" width="55" />
@@ -64,7 +64,7 @@
       <template v-else>
         <p class="import-tip">TXT 第一行为列名，支持制表符、逗号或竖线分隔。请将文件列名对应到商品字段。</p>
         <div class="txt-toolbar">
-          <input type="file" accept=".txt,.tsv,.csv" @change="handleTxtFileChange" />
+          <div class="template-actions"><el-button link type="primary" @click="downloadTxtTemplate">下载 TXT 模板</el-button><input type="file" accept=".txt,.tsv,.csv" @change="handleTxtFileChange" /></div>
           <el-select v-model="txtDelimiter" style="width: 150px" @change="parseTxtContent">
             <el-option label="制表符（Tab）" value="tab" />
             <el-option label="逗号（,）" value="," />
@@ -145,7 +145,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useRoute } from 'vue-router'
-import { createProduct, importProducts, listProducts, previewProductsExcel } from '@/api/erp'
+import { createProduct, downloadProductExcelTemplate, importProducts, listProducts, previewProductsExcel } from '@/api/erp'
 import type { CreateProductRequest, ProductImportRow, ProductImportResult, ProductView } from '@/types/erp'
 
 const route = useRoute()
@@ -212,6 +212,29 @@ const rules: FormRules<CreateProductRequest> = {
   productAttribute: [{ required: true, message: '请选择商品属性', trigger: 'change' }],
 }
 
+
+
+function saveBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+async function downloadExcelTemplate() {
+  const blob = await downloadProductExcelTemplate()
+  saveBlob(blob, '商品档案导入模板.xlsx')
+}
+
+function downloadTxtTemplate() {
+  const headers = ['商品编码', '商品名称', '品牌名称', '单位', '商品属性', '助记码', '商品类别', '商品规格', '备注']
+  const content = '\\uFEFF' + headers.join('\\t') + '\\r\\n'
+  saveBlob(new Blob([content], { type: 'text/plain;charset=utf-8' }), '商品档案导入模板.txt')
+}
 
 function openImportDialog() {
   importErrors.value = []
@@ -376,7 +399,7 @@ onMounted(() => {
 .query { margin-bottom: 8px; }
 .import-mode { margin-bottom: 12px; }
 .import-tip { color: var(--el-text-color-secondary); font-size: 13px; margin: 8px 0 12px; }
-.txt-toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.template-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }\n.txt-toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
 .mapping-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
 .mapping-grid :deep(.el-form-item) { margin-bottom: 10px; }
 .required-mark { color: var(--el-color-danger); margin-left: 8px; font-size: 12px; }
