@@ -12,5 +12,5 @@ public interface ProductApplicationService {
 
     ProductView create(CreateProductCommand command);
 
-    ProductImportResult importProducts(List<CreateProductCommand> commands);
+    ProductImportResult importProducts(List<ProductImportRow> rows);
 }
