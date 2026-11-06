@@ -34,7 +34,7 @@
               v-model="keyword"
               class="search"
               clearable
-              placeholder="搜索系统功能 / 单据 / 报表"
+              placeholder="搜索功能、单据、报表或商品"
               :prefix-icon="Search"
               @focus="searchVisible = true"
               @keydown="handleSearchKeydown"
@@ -228,7 +228,7 @@ type SearchItem = {
 
 const keyword = ref('')
 const searchVisible = ref(false)
-const searchActiveIndex = ref(0)
+const searchActiveIndex = ref(-1)
 const productLoading = ref(false)
 const productResults = ref<ProductView[]>([])
 let productSearchTimer: ReturnType<typeof setTimeout> | undefined
@@ -294,7 +294,7 @@ const searchResultCount = computed(() => filteredSearchItems.value.length + prod
 
 watch(keyword, (value) => {
   const query = value.trim()
-  searchActiveIndex.value = 0
+  searchActiveIndex.value = -1
   searchVisible.value = Boolean(query)
   productResults.value = []
   productLoading.value = false
@@ -383,7 +383,7 @@ function handleSideClick(item: SideMenuItem) {
 function openSearchItem(item: SearchItem) {
   searchVisible.value = false
   keyword.value = ''
-  searchActiveIndex.value = 0
+  searchActiveIndex.value = -1
   router.push(item.path)
 }
 
@@ -391,7 +391,7 @@ function openProductResult(product: ProductView) {
   const productKeyword = product.sku || product.name
   searchVisible.value = false
   keyword.value = ''
-  searchActiveIndex.value = 0
+  searchActiveIndex.value = -1
   router.push({ path: '/erp/products', query: { keyword: productKeyword } })
 }
 
@@ -421,9 +421,10 @@ function handleSearchKeydown(event: KeyboardEvent) {
 
   if (event.key === 'Enter' && searchResultCount.value) {
     event.preventDefault()
-    const index = searchActiveIndex.value
+    const index = searchActiveIndex.value < 0 ? 0 : searchActiveIndex.value
     if (index < filteredSearchItems.value.length) {
-      openSearchItem(filteredSearchItems.value[index])
+      const item = filteredSearchItems.value[index]
+      if (item) openSearchItem(item)
     } else {
       const product = productResults.value[index - filteredSearchItems.value.length]
       if (product) openProductResult(product)
