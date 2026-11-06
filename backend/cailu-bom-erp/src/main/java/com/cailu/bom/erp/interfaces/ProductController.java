@@ -33,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -90,7 +89,7 @@ public class ProductController {
 
     @GetMapping("/imports/excel/template")
     public ResponseEntity<byte[]> downloadExcelTemplate() throws IOException {
-        String[] headers = {"商品编码", "商品名称", "品牌名称", "单位", "商品属性",
+        String[] headers = {"*商品编码", "*商品名称", "*品牌名称", "*单位", "*商品属性",
                 "助记码", "商品类别", "商品规格", "备注"};
         try (Workbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
