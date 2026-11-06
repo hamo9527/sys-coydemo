@@ -42,12 +42,18 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ProductImportResult importProducts(List<CreateProductCommand> commands) {
+    public ProductImportResult importProducts(List<ProductImportRow> rows) {
         int successCount = 0;
         List<String> errors = new ArrayList<>();
-        for (int i = 0; i < commands.size(); i++) {
-            CreateProductCommand command = commands.get(i);
+        for (int i = 0; i < rows.size(); i++) {
+            ProductImportRow row = rows.get(i);
             try {
+                CreateProductCommand command = new CreateProductCommand(
+                        row.sku(), nullIfBlank(row.mnemonicCode()), row.name(), row.brandName(),
+                        nullIfBlank(row.category()), nullIfBlank(row.spec()), row.unit(),
+                        null, null, null, null, null, null, null, null, null,
+                        false, null, null, null, row.productAttribute(), false, false, false,
+                        null, null, null, null, null, null, null);
                 createProduct(command);
                 successCount++;
             } catch (BusinessException | IllegalArgumentException exception) {
@@ -55,6 +61,10 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
             }
         }
         return new ProductImportResult(successCount, errors.size(), errors);
+    }
+
+    private String nullIfBlank(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     private Product createProduct(CreateProductCommand command) {
