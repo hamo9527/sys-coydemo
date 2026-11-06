@@ -57,7 +57,7 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
                 createProduct(command);
                 successCount++;
             } catch (BusinessException | IllegalArgumentException exception) {
-                errors.add("第 " + (i + 1) + " 行：" + exception.getMessage());
+                errors.add("第 " + (i + 2) + " 行：" + exception.getMessage());
             }
         }
         return new ProductImportResult(successCount, errors.size(), errors);
