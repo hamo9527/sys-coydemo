@@ -51,6 +51,15 @@
       <template v-if="importMode === 'excel'">
         <p class="import-tip">支持 .xlsx 文件，第一行为表头。必需列：商品编码、商品名称、品牌名称、单位、商品属性。</p>
         <input type="file" accept=".xlsx" @change="handleExcelFileChange" />
+        <p v-if="excelRows.length" class="import-tip">已读取 {{ excelRows.length }} 行，预览前 5 行：</p>
+        <el-table v-if="excelPreviewRows.length" :data="excelPreviewRows" size="small" border max-height="220">
+          <el-table-column prop="line" label="行" width="55" />
+          <el-table-column prop="sku" label="商品编码" />
+          <el-table-column prop="name" label="商品名称" />
+          <el-table-column prop="brandName" label="品牌名称" />
+          <el-table-column prop="unit" label="单位" width="80" />
+          <el-table-column prop="productAttribute" label="商品属性" />
+        </el-table>
       </template>
       <template v-else>
         <p class="import-tip">TXT 第一行为列名，支持制表符、逗号或竖线分隔。请将文件列名对应到商品字段。</p>
@@ -85,7 +94,8 @@
       </el-alert>
       <template #footer>
         <el-button @click="importDialogVisible = false">关闭</el-button>
-        <el-button v-if="importMode === 'txt'" type="primary" :loading="importLoading" :disabled="!txtRows.length" @click="handleTxtImport">开始导入</el-button>
+        <el-button v-if="importMode === 'excel'" type="primary" :loading="importLoading" :disabled="!excelRows.length" @click="handleExcelImport">开始导入</el-button>
+        <el-button v-else type="primary" :loading="importLoading" :disabled="!txtRows.length" @click="handleTxtImport">开始导入</el-button>
       </template>
     </el-dialog>
 
@@ -135,7 +145,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { useRoute } from 'vue-router'
-import { createProduct, importProducts, importProductsExcel, listProducts } from '@/api/erp'
+import { createProduct, importProducts, listProducts, previewProductsExcel } from '@/api/erp'
 import type { CreateProductRequest, ProductImportRow, ProductImportResult, ProductView } from '@/types/erp'
 
 const route = useRoute()
@@ -147,6 +157,7 @@ const importDialogVisible = ref(false)
 const importMode = ref<'excel' | 'txt'>('excel')
 const importLoading = ref(false)
 const importErrors = ref<string[]>([])
+const excelRows = ref<ProductImportRow[]>([])
 const txtContent = ref('')
 const txtDelimiter = ref('tab')
 const txtHeaders = ref<string[]>([])
@@ -166,6 +177,7 @@ const mapping = reactive<Record<keyof ProductImportRow, string>>({
   sku: '', name: '', brandName: '', unit: '', productAttribute: '',
   mnemonicCode: '', category: '', spec: '', remark: '',
 })
+const excelPreviewRows = computed(() => excelRows.value.slice(0, 5).map((row, index) => ({ line: index + 2, ...row })))
 const txtPreviewRows = computed(() => txtRows.value.slice(0, 5).map((row, index) => ({
   line: index + 2,
   sku: mappedValue(row, 'sku'),
@@ -216,13 +228,25 @@ async function handleExcelFileChange(event: Event) {
   if (!file) return
   importLoading.value = true
   importErrors.value = []
+  excelRows.value = []
   try {
-    const result = await importProductsExcel(file)
+    excelRows.value = await previewProductsExcel(file)
+    ElMessage.success('已读取 ' + excelRows.value.length + ' 行，请确认后导入')
+  } finally {
+    importLoading.value = false
+    input.value = ''
+  }
+}
+
+async function handleExcelImport() {
+  importLoading.value = true
+  importErrors.value = []
+  try {
+    const result = await importProducts(excelRows.value)
     showImportResult(result)
     await loadList()
   } finally {
     importLoading.value = false
-    input.value = ''
   }
 }
 
