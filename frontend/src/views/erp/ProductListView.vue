@@ -207,7 +207,7 @@ function openImportDialog() {
 }
 
 function normalizeHeader(value: string) {
-  return value.trim().replace(/\\s+/g, '').toLowerCase()
+  return value.trim().replace(/\s+/g, '').toLowerCase()
 }
 
 async function handleExcelFileChange(event: Event) {
@@ -236,13 +236,13 @@ async function handleTxtFileChange(event: Event) {
 }
 
 function parseTxtContent() {
-  const lines = txtContent.value.replace(/^\\uFEFF/, '').split(/\\r?\\n/).filter((line) => line.trim())
+  const lines = txtContent.value.replace(/^\uFEFF/, '').split(/\r?\n/).filter((line) => line.trim())
   if (!lines.length) {
     txtHeaders.value = []
     txtRows.value = []
     return
   }
-  const delimiter = txtDelimiter.value === 'tab' ? '\\t' : txtDelimiter.value
+  const delimiter = txtDelimiter.value === 'tab' ? '\t' : txtDelimiter.value
   txtHeaders.value = lines[0].split(delimiter).map((value) => value.trim())
   txtRows.value = lines.slice(1).map((line) => line.split(delimiter).map((value) => value.trim()))
   for (const field of importFields) {
