@@ -11,7 +11,7 @@
     <artifactId>cailu-bom-erp</artifactId>
     <name>cailu-bom-erp</name>
 
-    <dependencies>
+    <dependencies>\n        <dependency>\n            <groupId>org.apache.poi</groupId>\n            <artifactId>poi-ooxml</artifactId>\n            <version>5.3.0</version>\n        </dependency>
         <dependency>
             <groupId>com.cailu</groupId>
             <artifactId>cailu-bom-common</artifactId>
