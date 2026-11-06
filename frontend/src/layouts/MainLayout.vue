@@ -297,13 +297,12 @@ watch(keyword, (value) => {
   searchActiveIndex.value = -1
   searchVisible.value = Boolean(query)
   productResults.value = []
-  productLoading.value = false
+  productLoading.value = Boolean(query)
 
   if (productSearchTimer) clearTimeout(productSearchTimer)
   if (!query) return
 
   productSearchTimer = setTimeout(async () => {
-    productLoading.value = true
     try {
       const result = await listProducts({ keyword: query, page: 1, size: 6 })
       if (keyword.value.trim() === query) {
