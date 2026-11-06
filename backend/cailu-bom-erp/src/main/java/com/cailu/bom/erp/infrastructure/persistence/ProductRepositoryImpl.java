@@ -35,12 +35,19 @@ public class ProductRepositoryImpl implements ProductRepository {
         long current = Math.max(page, 1);
         long pageSize = Math.min(Math.max(size, 1), 100);
         LambdaQueryWrapper<ErpProductDO> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(keyword)) {
-            wrapper.and(w -> w.like(ErpProductDO::getSku, keyword)
-                    .or().like(ErpProductDO::getMnemonicCode, keyword)
-                    .or().like(ErpProductDO::getName, keyword)
-                    .or().like(ErpProductDO::getBrandName, keyword));
+
+        String searchKeyword = keyword == null ? null : keyword.trim();
+        if (StringUtils.hasText(searchKeyword)) {
+            // 商品全局搜索：编码、助记码、名称、品牌、规格和分类均支持包含式模糊匹配。
+            // LambdaQueryWrapper 会将关键词作为 SQL 参数绑定，避免拼接用户输入。
+            wrapper.and(w -> w.like(ErpProductDO::getSku, searchKeyword)
+                    .or().like(ErpProductDO::getMnemonicCode, searchKeyword)
+                    .or().like(ErpProductDO::getName, searchKeyword)
+                    .or().like(ErpProductDO::getBrandName, searchKeyword)
+                    .or().like(ErpProductDO::getSpec, searchKeyword)
+                    .or().like(ErpProductDO::getCategory, searchKeyword));
         }
+
         wrapper.orderByDesc(ErpProductDO::getId);
         Page<ErpProductDO> result = erpProductMapper.selectPage(new Page<>(current, pageSize), wrapper);
         return new PageResult<>(
