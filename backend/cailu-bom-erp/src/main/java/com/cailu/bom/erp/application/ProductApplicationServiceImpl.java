@@ -51,7 +51,7 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
                 CreateProductCommand command = new CreateProductCommand(
                         row.sku(), nullIfBlank(row.mnemonicCode()), row.name(), row.brandName(),
                         nullIfBlank(row.category()), nullIfBlank(row.spec()), row.unit(),
-                        null, null, null, null, null, null, null, null, null,
+                        null, null, null, null, null, null, null, null,
                         false, null, null, null, row.productAttribute(), false, false, false,
                         null, null, null, null, null, null, null);
                 createProduct(command);
