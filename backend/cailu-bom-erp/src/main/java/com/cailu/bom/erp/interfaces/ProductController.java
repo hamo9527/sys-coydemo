@@ -22,6 +22,8 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -71,9 +73,27 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success(productApplicationService.getById(id)));
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ProductView>> update(
+            @PathVariable Long id, @Valid @RequestBody CreateProductRequest request) {
+        CreateProductCommand command = toCommand(request);
+        return ResponseEntity.ok(ApiResponse.success(productApplicationService.update(id, command)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
+        productApplicationService.delete(id);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ProductView>> create(@Valid @RequestBody CreateProductRequest request) {
-        CreateProductCommand command = new CreateProductCommand(
+        CreateProductCommand command = toCommand(request);        return ResponseEntity.ok(ApiResponse.success(productApplicationService.create(command)));
+    }
+
+
+    private CreateProductCommand toCommand(CreateProductRequest request) {
+        return new CreateProductCommand(
                 request.sku(), request.mnemonicCode(), request.name(), request.brandName(),
                 request.category(), request.spec(), request.unit(), request.auxiliaryUnit(),
                 request.auxiliarySpec(), request.packagingUnit(), request.packagingSpec(),
@@ -83,9 +103,7 @@ public class ProductController {
                 request.installationRequired(), request.cloudStoreVisible(), request.productionProcess(),
                 request.productionOrigin(), request.usageLocation(), request.vrUrl(), request.remark(),
                 request.purchasePrice(), request.salePrice());
-        return ResponseEntity.ok(ApiResponse.success(productApplicationService.create(command)));
     }
-
 
     @GetMapping("/imports/excel/template")
     public ResponseEntity<byte[]> downloadExcelTemplate() throws IOException {
