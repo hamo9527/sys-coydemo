@@ -88,7 +88,8 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<ProductView>> create(@Valid @RequestBody CreateProductRequest request) {
-        CreateProductCommand command = toCommand(request);        return ResponseEntity.ok(ApiResponse.success(productApplicationService.create(command)));
+        CreateProductCommand command = toCommand(request);
+        return ResponseEntity.ok(ApiResponse.success(productApplicationService.create(command)));
     }
 
 
