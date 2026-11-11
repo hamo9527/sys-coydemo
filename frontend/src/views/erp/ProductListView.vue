@@ -2,7 +2,7 @@
   <div class="page-card">
     <div class="page-header">
       <h2>商品档案</h2>
-      <div class="page-actions"><el-button @click="openImportDialog">导入商品</el-button><el-button type="primary" @click="dialogVisible = true">新建商品</el-button></div>
+      <div class="page-actions"><el-button @click="openImportDialog">导入商品</el-button><el-button type="primary" @click="openCreateDialog">新建商品</el-button></div>
     </div>
     <el-form :inline="true" class="query" @submit.prevent="handleSearch">
       <el-form-item label="关键词">
@@ -39,7 +39,40 @@
       <el-table-column prop="usageLocation" label="使用位置" min-width="120" />
       <el-table-column prop="vrUrl" label="VR地址" min-width="160" />
       <el-table-column prop="remark" label="备注" min-width="160" />
+      <el-table-column label="操作" fixed="right" width="190">
+        <template #default="{ row }">
+          <el-button link type="primary" @click="openDetail(row)">查看</el-button>
+          <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
+          <el-button link type="danger" :loading="deletingId === row.id" @click="handleDelete(row)">删除</el-button>
+        </template>
+      </el-table-column>
     </el-table>
+    <el-dialog v-model="detailVisible" title="商品详情" width="760px">
+      <el-descriptions v-if="detailData" :column="2" border>
+        <el-descriptions-item label="商品编码">{{ detailData.sku }}</el-descriptions-item>
+        <el-descriptions-item label="助记码">{{ detailData.mnemonicCode || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="商品名称">{{ detailData.name }}</el-descriptions-item>
+        <el-descriptions-item label="品牌名称">{{ detailData.brandName }}</el-descriptions-item>
+        <el-descriptions-item label="商品类别">{{ detailData.category || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="商品规格">{{ detailData.spec || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="单位">{{ detailData.unit }}</el-descriptions-item>
+        <el-descriptions-item label="商品属性">{{ detailData.productAttribute }}</el-descriptions-item>
+        <el-descriptions-item label="单重">{{ detailData.unitWeight ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="最低起订量">{{ detailData.minimumOrderQty ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="最小库存">{{ detailData.minStock ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="最大库存">{{ detailData.maxStock ?? '-' }}</el-descriptions-item>
+        <el-descriptions-item label="小色号库存">{{ detailData.smallColorStock ? '是' : '否' }}</el-descriptions-item>
+        <el-descriptions-item label="虚拟商品">{{ detailData.virtualProduct ? '是' : '否' }}</el-descriptions-item>
+        <el-descriptions-item label="包安装">{{ detailData.installationRequired ? '是' : '否' }}</el-descriptions-item>
+        <el-descriptions-item label="云店可查">{{ detailData.cloudStoreVisible ? '是' : '否' }}</el-descriptions-item>
+        <el-descriptions-item label="生产工艺">{{ detailData.productionProcess || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="生产产地">{{ detailData.productionOrigin || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="使用位置">{{ detailData.usageLocation || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="VR地址">{{ detailData.vrUrl || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">{{ detailData.remark || '-' }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer><el-button @click="detailVisible = false">关闭</el-button></template>
+    </el-dialog>
     <div class="pager">
       <el-pagination v-model:current-page="page" v-model:page-size="size" layout="total, prev, pager, next" :total="total" @current-change="loadList" @size-change="handleSizeChange" />
     </div>
@@ -99,7 +132,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="dialogVisible" title="新建商品" width="900px" destroy-on-close>
+    <el-dialog v-model="dialogVisible" :title="editingId === null ? '新建商品' : '编辑商品'" width="900px" destroy-on-close>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="110px">
         <el-row :gutter="16">
           <el-col :span="12"><el-form-item label="*商品编码" prop="sku"><el-input v-model="form.sku" /></el-form-item></el-col>
@@ -134,7 +167,7 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleCreate">保存</el-button>
+        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -143,15 +176,19 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute } from 'vue-router'
-import { createProduct, downloadProductExcelTemplate, importProducts, listProducts, previewProductsExcel } from '@/api/erp'
+import { createProduct, deleteProduct, downloadProductExcelTemplate, getProduct, importProducts, listProducts, previewProductsExcel, updateProduct } from '@/api/erp'
 import type { CreateProductRequest, ProductImportRow, ProductImportResult, ProductView } from '@/types/erp'
 
 const route = useRoute()
 const loading = ref(false)
 const saving = ref(false)
 const dialogVisible = ref(false)
+const editingId = ref<string | number | null>(null)
+const detailVisible = ref(false)
+const detailData = ref<ProductView | null>(null)
+const deletingId = ref<string | number | null>(null)
 
 const importDialogVisible = ref(false)
 const importMode = ref<'excel' | 'txt'>('excel')
@@ -366,14 +403,61 @@ function handleSizeChange() {
   void loadList()
 }
 
-async function handleCreate() {
+function openCreateDialog() {
+  editingId.value = null
+  formRef.value?.resetFields()
+  formRef.value?.clearValidate()
+  dialogVisible.value = true
+}
+
+async function openEditDialog(row: ProductView) {
+  const detail = await getProduct(row.id)
+  editingId.value = detail.id
+  Object.assign(form, detail)
+  dialogVisible.value = true
+  formRef.value?.clearValidate()
+}
+
+async function openDetail(row: ProductView) {
+  detailData.value = await getProduct(row.id)
+  detailVisible.value = true
+}
+
+async function handleDelete(row: ProductView) {
+  try {
+    await ElMessageBox.confirm(`确定删除商品“${row.name}”（${row.sku}）吗？删除后将从商品档案列表中隐藏。`, '删除确认', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+    })
+  } catch {
+    return
+  }
+
+  deletingId.value = row.id
+  try {
+    await deleteProduct(row.id)
+    ElMessage.success('商品已删除')
+    if (rows.value.length === 1 && page.value > 1) page.value -= 1
+    await loadList()
+  } finally {
+    deletingId.value = null
+  }
+}
+
+async function handleSave() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   saving.value = true
   try {
-    await createProduct({ ...form })
+    if (editingId.value === null) {
+      await createProduct({ ...form })
+      ElMessage.success('商品已创建')
+    } else {
+      await updateProduct(editingId.value, { ...form })
+      ElMessage.success('商品已更新')
+    }
     dialogVisible.value = false
-    ElMessage.success('商品已创建')
     await loadList()
   } finally {
     saving.value = false
