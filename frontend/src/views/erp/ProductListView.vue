@@ -419,7 +419,38 @@ function openCreateDialog() {
 async function openEditDialog(row: ProductView) {
   const detail = await getProduct(row.id)
   editingId.value = detail.id
-  Object.assign(form, detail)
+  Object.assign(form, {
+    sku: detail.sku,
+    mnemonicCode: detail.mnemonicCode ?? '',
+    name: detail.name,
+    brandName: detail.brandName,
+    category: detail.category ?? '',
+    spec: detail.spec ?? '',
+    unit: detail.unit,
+    auxiliaryUnit: detail.auxiliaryUnit ?? '',
+    auxiliarySpec: detail.auxiliarySpec ?? '',
+    packagingUnit: detail.packagingUnit ?? '',
+    packagingSpec: detail.packagingSpec ?? '',
+    unitWeight: detail.unitWeight ?? undefined,
+    minimumOrderQty: detail.minimumOrderQty ?? undefined,
+    minStock: detail.minStock ?? undefined,
+    maxStock: detail.maxStock ?? undefined,
+    smallColorStock: detail.smallColorStock,
+    stockAgeThreshold: detail.stockAgeThreshold ?? undefined,
+    obsoleteDays: detail.obsoleteDays ?? undefined,
+    shelfLifeDays: detail.shelfLifeDays ?? undefined,
+    productAttribute: detail.productAttribute,
+    virtualProduct: detail.virtualProduct,
+    installationRequired: detail.installationRequired,
+    cloudStoreVisible: detail.cloudStoreVisible,
+    productionProcess: detail.productionProcess ?? '',
+    productionOrigin: detail.productionOrigin ?? '',
+    usageLocation: detail.usageLocation ?? '',
+    vrUrl: detail.vrUrl ?? '',
+    remark: detail.remark ?? '',
+    purchasePrice: detail.purchasePrice,
+    salePrice: detail.salePrice,
+  })
   dialogVisible.value = true
   formRef.value?.clearValidate()
 }
