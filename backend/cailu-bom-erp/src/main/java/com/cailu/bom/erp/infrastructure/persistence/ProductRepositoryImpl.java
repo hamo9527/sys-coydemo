@@ -100,6 +100,11 @@ public class ProductRepositoryImpl implements ProductRepository {
         return toDomain(row);
     }
 
+    @Override
+    public void deleteById(Long id) {
+        erpProductMapper.deleteById(id);
+    }
+
     private Product toDomain(ErpProductDO row) {
         return new Product(
                 row.getId(), row.getSku(), row.getMnemonicCode(), row.getName(), row.getBrandName(),
