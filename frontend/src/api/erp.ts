@@ -24,6 +24,14 @@ export function createProduct(data: CreateProductRequest) {
   return http.post<ProductView>('/erp/products', data)
 }
 
+export function updateProduct(id: string | number, data: CreateProductRequest) {
+  return http.put<ProductView>(`/erp/products/${id}`, data)
+}
+
+export function deleteProduct(id: string | number) {
+  return http.delete<void>(`/erp/products/${id}`)
+}
+
 export function importProducts(rows: ProductImportRow[]) {
   return http.post<ProductImportResult>('/erp/products/imports', rows)
 }
