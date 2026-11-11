@@ -411,7 +411,38 @@ function handleSizeChange() {
 
 function openCreateDialog() {
   editingId.value = null
-  formRef.value?.resetFields()
+  Object.assign(form, {
+    sku: '',
+    mnemonicCode: '',
+    name: '',
+    brandName: '',
+    category: '',
+    spec: '',
+    unit: '',
+    auxiliaryUnit: '',
+    auxiliarySpec: '',
+    packagingUnit: '',
+    packagingSpec: '',
+    unitWeight: undefined,
+    minimumOrderQty: undefined,
+    minStock: undefined,
+    maxStock: undefined,
+    smallColorStock: false,
+    stockAgeThreshold: undefined,
+    obsoleteDays: undefined,
+    shelfLifeDays: undefined,
+    productAttribute: '',
+    virtualProduct: false,
+    installationRequired: false,
+    cloudStoreVisible: false,
+    productionProcess: '',
+    productionOrigin: '',
+    usageLocation: '',
+    vrUrl: '',
+    remark: '',
+    purchasePrice: 0,
+    salePrice: 0,
+  })
   formRef.value?.clearValidate()
   dialogVisible.value = true
 }
