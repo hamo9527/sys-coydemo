@@ -12,5 +12,9 @@ public interface ProductApplicationService {
 
     ProductView create(CreateProductCommand command);
 
+    ProductView update(Long id, CreateProductCommand command);
+
+    void delete(Long id);
+
     ProductImportResult importProducts(List<ProductImportRow> rows);
 }
