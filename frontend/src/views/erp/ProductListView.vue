@@ -49,6 +49,32 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-dialog
+      v-model="deleteDialogVisible"
+      title="删除商品"
+      width="440px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="!deleteSubmitting"
+      :show-close="!deleteSubmitting"
+      destroy-on-close
+    >
+      <div class="delete-confirm">
+        <div class="delete-confirm__icon"><el-icon><WarningFilled /></el-icon></div>
+        <div class="delete-confirm__content">
+          <p class="delete-confirm__title">确定删除这条商品档案吗？</p>
+          <p class="delete-confirm__description">删除后，该商品将从商品档案列表中隐藏。请确认商品信息无误。</p>
+        </div>
+      </div>
+      <el-descriptions v-if="pendingDeleteRow" :column="1" border size="small" class="delete-product-info">
+        <el-descriptions-item label="商品名称">{{ pendingDeleteRow.name }}</el-descriptions-item>
+        <el-descriptions-item label="商品编码">{{ pendingDeleteRow.sku }}</el-descriptions-item>
+        <el-descriptions-item label="品牌名称">{{ pendingDeleteRow.brandName || '-' }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <el-button :disabled="deleteSubmitting" @click="deleteDialogVisible = false">取消</el-button>
+        <el-button type="danger" :loading="deleteSubmitting" @click="confirmDelete">确认删除</el-button>
+      </template>
+    </el-dialog>
     <el-dialog v-model="detailVisible" title="商品详情" width="760px">
       <el-descriptions v-if="detailData" :column="2" border>
         <el-descriptions-item label="商品编码">{{ detailData.sku }}</el-descriptions-item>
@@ -182,7 +208,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { WarningFilled } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
 import { createProduct, deleteProduct, downloadProductExcelTemplate, getProduct, importProducts, listProducts, previewProductsExcel, updateProduct } from '@/api/erp'
 import type { CreateProductRequest, ProductImportRow, ProductImportResult, ProductView } from '@/types/erp'
@@ -195,6 +222,9 @@ const editingId = ref<string | number | null>(null)
 const detailVisible = ref(false)
 const detailData = ref<ProductView | null>(null)
 const deletingId = ref<string | number | null>(null)
+const deleteDialogVisible = ref(false)
+const deleteSubmitting = ref(false)
+const pendingDeleteRow = ref<ProductView | null>(null)
 
 const importDialogVisible = ref(false)
 const importMode = ref<'excel' | 'txt'>('excel')
@@ -491,25 +521,27 @@ async function openDetail(row: ProductView) {
   detailVisible.value = true
 }
 
-async function handleDelete(row: ProductView) {
-  try {
-    await ElMessageBox.confirm(`确定删除商品“${row.name}”（${row.sku}）吗？删除后将从商品档案列表中隐藏。`, '删除确认', {
-      type: 'warning',
-      confirmButtonText: '删除',
-      cancelButtonText: '取消',
-    })
-  } catch {
-    return
-  }
+function handleDelete(row: ProductView) {
+  pendingDeleteRow.value = row
+  deleteDialogVisible.value = true
+}
 
-  deletingId.value = row.id
+async function confirmDelete() {
+  const target = pendingDeleteRow.value
+  if (!target || deleteSubmitting.value) return
+
+  deletingId.value = target.id
+  deleteSubmitting.value = true
   try {
-    await deleteProduct(row.id)
+    await deleteProduct(target.id)
     ElMessage.success('商品已删除')
+    deleteDialogVisible.value = false
+    pendingDeleteRow.value = null
     if (rows.value.length === 1 && page.value > 1) page.value -= 1
     await loadList()
   } finally {
     deletingId.value = null
+    deleteSubmitting.value = false
   }
 }
 
@@ -556,5 +588,12 @@ onMounted(() => {
 .mapping-grid :deep(.el-form-item) { margin-bottom: 10px; }
 .required-mark { color: var(--el-color-danger); margin-left: 8px; font-size: 12px; }
 .import-errors { margin-top: 12px; max-height: 180px; overflow: auto; }
+
+.delete-confirm { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.delete-confirm__icon { display: flex; align-items: center; justify-content: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; color: var(--el-color-danger); background: var(--el-color-danger-light-9); font-size: 20px; }
+.delete-confirm__content { min-width: 0; }
+.delete-confirm__title { margin: 0 0 6px; color: var(--el-text-color-primary); font-weight: 600; }
+.delete-confirm__description { margin: 0; color: var(--el-text-color-secondary); font-size: 13px; line-height: 1.6; }
+.delete-product-info { margin-top: 12px; }
 .pager { display: flex; justify-content: flex-end; margin-top: 16px; }
 </style>
