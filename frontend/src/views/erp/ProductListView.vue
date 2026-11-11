@@ -18,6 +18,8 @@
       <el-table-column prop="category" label="商品类别" min-width="110" />
       <el-table-column prop="spec" label="商品规格" min-width="120" />
       <el-table-column prop="unit" label="*单位" min-width="80" />
+      <el-table-column prop="purchasePrice" label="采购价" min-width="100" />
+      <el-table-column prop="salePrice" label="销售价" min-width="100" />
       <el-table-column prop="auxiliaryUnit" label="辅助单位" min-width="90" />
       <el-table-column prop="auxiliarySpec" label="辅助规格" min-width="110" />
       <el-table-column prop="packagingUnit" label="包装单位" min-width="90" />
@@ -56,6 +58,8 @@
         <el-descriptions-item label="商品类别">{{ detailData.category || '-' }}</el-descriptions-item>
         <el-descriptions-item label="商品规格">{{ detailData.spec || '-' }}</el-descriptions-item>
         <el-descriptions-item label="单位">{{ detailData.unit }}</el-descriptions-item>
+        <el-descriptions-item label="采购价">{{ detailData.purchasePrice }}</el-descriptions-item>
+        <el-descriptions-item label="销售价">{{ detailData.salePrice }}</el-descriptions-item>
         <el-descriptions-item label="商品属性">{{ detailData.productAttribute }}</el-descriptions-item>
         <el-descriptions-item label="单重">{{ detailData.unitWeight ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="最低起订量">{{ detailData.minimumOrderQty ?? '-' }}</el-descriptions-item>
@@ -146,6 +150,8 @@
           <el-col :span="12"><el-form-item label="辅助规格" prop="auxiliarySpec"><el-input v-model="form.auxiliarySpec" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="包装单位" prop="packagingUnit"><el-input v-model="form.packagingUnit" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="包装规格" prop="packagingSpec"><el-input v-model="form.packagingSpec" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="采购价" prop="purchasePrice"><el-input-number v-model="form.purchasePrice" :min="0" :precision="4" /></el-form-item></el-col>
+          <el-col :span="12"><el-form-item label="销售价" prop="salePrice"><el-input-number v-model="form.salePrice" :min="0" :precision="4" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="单重" prop="unitWeight"><el-input-number v-model="form.unitWeight" :min="0" :precision="4" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="最低起订量" prop="minimumOrderQty"><el-input-number v-model="form.minimumOrderQty" :min="0" :precision="4" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="最小库存" prop="minStock"><el-input-number v-model="form.minStock" :min="0" :precision="4" /></el-form-item></el-col>
