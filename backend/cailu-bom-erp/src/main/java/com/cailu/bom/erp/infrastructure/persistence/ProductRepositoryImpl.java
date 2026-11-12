@@ -16,6 +16,7 @@ import java.util.Optional;
 public class ProductRepositoryImpl implements ProductRepository {
 
     private final ErpProductMapper erpProductMapper;
+    private final ErpStockMapper erpStockMapper;
 
     @Override
     public Optional<Product> findById(Long id) {
@@ -103,6 +104,12 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public void deleteById(Long id) {
         erpProductMapper.deleteById(id);
+    }
+
+    @Override
+    public boolean hasStock(Long productId) {
+        return erpStockMapper.selectCount(new LambdaQueryWrapper<ErpStockDO>()
+                .eq(ErpStockDO::getProductId, productId)) > 0;
     }
 
     private Product toDomain(ErpProductDO row) {
