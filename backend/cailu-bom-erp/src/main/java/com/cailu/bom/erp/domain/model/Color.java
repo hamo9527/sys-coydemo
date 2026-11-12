@@ -1,0 +1,2 @@
+package com.cailu.bom.erp.domain.model;
+public record Color(Long id,String code,String name,String shortName,String brandName,String seriesName,String manufacturerColorCode,String swatchImageUrl,Integer status,String remark) {}

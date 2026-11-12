@@ -1,0 +1,2 @@
+package com.cailu.bom.erp.application;
+public record ColorCommand(String code,String name,String shortName,String brandName,String seriesName,String manufacturerColorCode,String swatchImageUrl,Integer status,String remark) { public ColorCommand { if(code==null||code.isBlank()) throw new IllegalArgumentException("色号编码不能为空"); if(name==null||name.isBlank()) throw new IllegalArgumentException("色号名称不能为空"); } }
