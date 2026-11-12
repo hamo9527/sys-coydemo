@@ -46,6 +46,9 @@ public class ErpProductDO extends BaseEntity {
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private BigDecimal maxStock;
     private Boolean smallColorStock;
+    private String colorManagementMode;
+    private Boolean batchManagementEnabled;
+    private Boolean gradeManagementEnabled;
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
     private Integer stockAgeThreshold;
     @TableField(updateStrategy = FieldStrategy.ALWAYS)
