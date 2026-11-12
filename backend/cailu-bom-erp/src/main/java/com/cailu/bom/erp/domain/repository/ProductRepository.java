@@ -13,5 +13,7 @@ public interface ProductRepository {
 
     PageResult<Product> page(String keyword, long page, long size);
 
-    Product save(Product product, String category, String spec);
+    Product save(Product product);
+
+    void deleteById(Long id);
 }

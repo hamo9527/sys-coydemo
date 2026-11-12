@@ -35,11 +35,19 @@ public class ProductRepositoryImpl implements ProductRepository {
         long current = Math.max(page, 1);
         long pageSize = Math.min(Math.max(size, 1), 100);
         LambdaQueryWrapper<ErpProductDO> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(keyword)) {
-            wrapper.and(w -> w.like(ErpProductDO::getSku, keyword)
-                    .or()
-                    .like(ErpProductDO::getName, keyword));
+
+        String searchKeyword = keyword == null ? null : keyword.trim();
+        if (StringUtils.hasText(searchKeyword)) {
+            // 商品全局搜索：编码、助记码、名称、品牌、规格和分类均支持包含式模糊匹配。
+            // LambdaQueryWrapper 会将关键词作为 SQL 参数绑定，避免拼接用户输入。
+            wrapper.and(w -> w.like(ErpProductDO::getSku, searchKeyword)
+                    .or().like(ErpProductDO::getMnemonicCode, searchKeyword)
+                    .or().like(ErpProductDO::getName, searchKeyword)
+                    .or().like(ErpProductDO::getBrandName, searchKeyword)
+                    .or().like(ErpProductDO::getSpec, searchKeyword)
+                    .or().like(ErpProductDO::getCategory, searchKeyword));
         }
+
         wrapper.orderByDesc(ErpProductDO::getId);
         Page<ErpProductDO> result = erpProductMapper.selectPage(new Page<>(current, pageSize), wrapper);
         return new PageResult<>(
@@ -50,14 +58,37 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public Product save(Product product, String category, String spec) {
+    public Product save(Product product) {
         ErpProductDO row = new ErpProductDO();
         row.setId(product.getId());
         row.setSku(product.getSku());
+        row.setMnemonicCode(product.getMnemonicCode());
         row.setName(product.getName());
+        row.setBrandName(product.getBrandName());
+        row.setCategory(product.getCategory());
+        row.setSpec(product.getSpec());
         row.setUnit(product.getUnit());
-        row.setCategory(category);
-        row.setSpec(spec);
+        row.setAuxiliaryUnit(product.getAuxiliaryUnit());
+        row.setAuxiliarySpec(product.getAuxiliarySpec());
+        row.setPackagingUnit(product.getPackagingUnit());
+        row.setPackagingSpec(product.getPackagingSpec());
+        row.setUnitWeight(product.getUnitWeight());
+        row.setMinimumOrderQty(product.getMinimumOrderQty());
+        row.setMinStock(product.getMinStock());
+        row.setMaxStock(product.getMaxStock());
+        row.setSmallColorStock(product.getSmallColorStock());
+        row.setStockAgeThreshold(product.getStockAgeThreshold());
+        row.setObsoleteDays(product.getObsoleteDays());
+        row.setShelfLifeDays(product.getShelfLifeDays());
+        row.setProductAttribute(product.getProductAttribute());
+        row.setVirtualProduct(product.getVirtualProduct());
+        row.setInstallationRequired(product.getInstallationRequired());
+        row.setCloudStoreVisible(product.getCloudStoreVisible());
+        row.setProductionProcess(product.getProductionProcess());
+        row.setProductionOrigin(product.getProductionOrigin());
+        row.setUsageLocation(product.getUsageLocation());
+        row.setVrUrl(product.getVrUrl());
+        row.setRemark(product.getRemark());
         row.setPurchasePrice(product.getPurchasePrice());
         row.setSalePrice(product.getSalePrice());
         row.setStatus(product.getStatus());
@@ -69,8 +100,21 @@ public class ProductRepositoryImpl implements ProductRepository {
         return toDomain(row);
     }
 
+    @Override
+    public void deleteById(Long id) {
+        erpProductMapper.deleteById(id);
+    }
+
     private Product toDomain(ErpProductDO row) {
-        return new Product(row.getId(), row.getSku(), row.getName(), row.getUnit(),
+        return new Product(
+                row.getId(), row.getSku(), row.getMnemonicCode(), row.getName(), row.getBrandName(),
+                row.getCategory(), row.getSpec(), row.getUnit(), row.getAuxiliaryUnit(),
+                row.getAuxiliarySpec(), row.getPackagingUnit(), row.getPackagingSpec(),
+                row.getUnitWeight(), row.getMinimumOrderQty(), row.getMinStock(), row.getMaxStock(),
+                row.getSmallColorStock(), row.getStockAgeThreshold(), row.getObsoleteDays(),
+                row.getShelfLifeDays(), row.getProductAttribute(), row.getVirtualProduct(),
+                row.getInstallationRequired(), row.getCloudStoreVisible(), row.getProductionProcess(),
+                row.getProductionOrigin(), row.getUsageLocation(), row.getVrUrl(), row.getRemark(),
                 row.getPurchasePrice(), row.getSalePrice(), row.getStatus());
     }
 }

@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProductApplicationServiceImpl implements ProductApplicationService {
@@ -34,17 +37,94 @@ public class ProductApplicationServiceImpl implements ProductApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ProductView create(CreateProductCommand command) {
+        return toView(createProduct(command));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProductView update(Long id, CreateProductCommand command) {
+        Product existing = productRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("product not found", 404));
+        productRepository.findBySku(command.sku()).filter(product -> !product.getId().equals(id))
+                .ifPresent(product -> {
+                    throw new BusinessException("商品编码已存在：" + command.sku());
+                });
+        Product updated = new Product(
+                existing.getId(), command.sku(), command.mnemonicCode(), command.name(), command.brandName(),
+                command.category(), command.spec(), command.unit(), command.auxiliaryUnit(),
+                command.auxiliarySpec(), command.packagingUnit(), command.packagingSpec(),
+                command.unitWeight(), command.minimumOrderQty(), command.minStock(), command.maxStock(),
+                command.smallColorStock(), command.stockAgeThreshold(), command.obsoleteDays(),
+                command.shelfLifeDays(), command.productAttribute(), command.virtualProduct(),
+                command.installationRequired(), command.cloudStoreVisible(), command.productionProcess(),
+                command.productionOrigin(), command.usageLocation(), command.vrUrl(), command.remark(),
+                command.purchasePrice(), command.salePrice(), existing.getStatus());
+        return toView(productRepository.save(updated));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(Long id) {
+        productRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("product not found", 404));
+        productRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProductImportResult importProducts(List<ProductImportRow> rows) {
+        int successCount = 0;
+        List<String> errors = new ArrayList<>();
+        for (int i = 0; i < rows.size(); i++) {
+            ProductImportRow row = rows.get(i);
+            try {
+                CreateProductCommand command = new CreateProductCommand(
+                        row.sku(), nullIfBlank(row.mnemonicCode()), row.name(), row.brandName(),
+                        nullIfBlank(row.category()), nullIfBlank(row.spec()), row.unit(),
+                        null, null, null, null, null, null, null, null,
+                        false, null, null, null, row.productAttribute(), false, false, false,
+                        null, null, null, null, null, null, null);
+                createProduct(command);
+                successCount++;
+            } catch (BusinessException | IllegalArgumentException exception) {
+                errors.add("第 " + (i + 2) + " 行：" + exception.getMessage());
+            }
+        }
+        return new ProductImportResult(successCount, errors.size(), errors);
+    }
+
+    private String nullIfBlank(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private Product createProduct(CreateProductCommand command) {
         productRepository.findBySku(command.sku()).ifPresent(p -> {
-            throw new BusinessException("sku already exists");
+            throw new BusinessException("商品编码已存在：" + command.sku());
         });
-        Product product = new Product(null, command.sku(), command.name(), command.unit(),
+        Product product = new Product(
+                null, command.sku(), command.mnemonicCode(), command.name(), command.brandName(),
+                command.category(), command.spec(), command.unit(), command.auxiliaryUnit(),
+                command.auxiliarySpec(), command.packagingUnit(), command.packagingSpec(),
+                command.unitWeight(), command.minimumOrderQty(), command.minStock(), command.maxStock(),
+                command.smallColorStock(), command.stockAgeThreshold(), command.obsoleteDays(),
+                command.shelfLifeDays(), command.productAttribute(), command.virtualProduct(),
+                command.installationRequired(), command.cloudStoreVisible(), command.productionProcess(),
+                command.productionOrigin(), command.usageLocation(), command.vrUrl(), command.remark(),
                 command.purchasePrice(), command.salePrice(), 1);
-        Product saved = productRepository.save(product, command.category(), command.spec());
-        return toView(saved);
+        return productRepository.save(product);
     }
 
     private ProductView toView(Product product) {
-        return new ProductView(product.getId(), product.getSku(), product.getName(),
-                product.getUnit(), product.getPurchasePrice(), product.getSalePrice(), product.getStatus());
+        return new ProductView(
+                product.getId(), product.getSku(), product.getMnemonicCode(), product.getName(),
+                product.getBrandName(), product.getCategory(), product.getSpec(), product.getUnit(),
+                product.getAuxiliaryUnit(), product.getAuxiliarySpec(), product.getPackagingUnit(),
+                product.getPackagingSpec(), product.getUnitWeight(), product.getMinimumOrderQty(),
+                product.getMinStock(), product.getMaxStock(), product.getSmallColorStock(),
+                product.getStockAgeThreshold(), product.getObsoleteDays(), product.getShelfLifeDays(),
+                product.getProductAttribute(), product.getVirtualProduct(), product.getInstallationRequired(),
+                product.getCloudStoreVisible(), product.getProductionProcess(), product.getProductionOrigin(),
+                product.getUsageLocation(), product.getVrUrl(), product.getRemark(),
+                product.getPurchasePrice(), product.getSalePrice(), product.getStatus());
     }
 }

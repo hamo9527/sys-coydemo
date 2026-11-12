@@ -11,6 +11,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ../sql/V20260813__init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ../sql/V20261104__expand_erp_product_profile.sql:/docker-entrypoint-initdb.d/zz_product_profile.sql:ro
     command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
