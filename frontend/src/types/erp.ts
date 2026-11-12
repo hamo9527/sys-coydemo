@@ -18,6 +18,9 @@ export type ProductView = {
   minStock: number | null
   maxStock: number | null
   smallColorStock: boolean
+  colorManagementMode: 'NONE' | 'DYNAMIC' | 'BOUND'
+  batchManagementEnabled: boolean
+  gradeManagementEnabled: boolean
   stockAgeThreshold: number | null
   obsoleteDays: number | null
   shelfLifeDays: number | null
@@ -251,3 +254,9 @@ export type CreateOutboundRequest = {
   totalWeight?: number
   items: CreateOutboundItemRequest[]
 }
+
+export type WarehouseView = { id: Id; code: string; name: string; address: string | null; status: number }
+export type WarehouseRequest = { code: string; name: string; address?: string; status: number }
+export type ColorView = { id: Id; code: string; name: string; shortName: string | null; brandName: string | null; seriesName: string | null; manufacturerColorCode: string | null; swatchImageUrl: string | null; status: number; remark: string | null }
+export type ColorRequest = { code: string; name: string; shortName?: string; brandName?: string; seriesName?: string; manufacturerColorCode?: string; swatchImageUrl?: string; status?: number; remark?: string }
+export type ProductColorMode = { productId: Id; colorManagementMode: 'NONE' | 'DYNAMIC' | 'BOUND'; batchManagementEnabled: boolean; gradeManagementEnabled: boolean }

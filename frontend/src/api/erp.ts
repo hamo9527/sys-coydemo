@@ -86,3 +86,16 @@ export function createOutbound(data: CreateOutboundRequest) {
 export function confirmOutbound(id: string | number) {
   return http.post<OutboundView>(`/erp/outbounds/${id}/confirmations`)
 }
+
+import type { WarehouseView, WarehouseRequest, ColorView, ColorRequest, ProductColorMode } from '@/types/erp'
+export function listWarehouses(params: { keyword?: string; status?: number }) { return http.get<WarehouseView[]>('/erp/warehouses', { params }) }
+export function createWarehouse(data: WarehouseRequest) { return http.post<WarehouseView>('/erp/warehouses', data) }
+export function updateWarehouse(id: string | number, data: WarehouseRequest) { return http.put<WarehouseView>(`/erp/warehouses/${id}`, data) }
+export function deleteWarehouse(id: string | number) { return http.delete<void>(`/erp/warehouses/${id}`) }
+export function listColors(keyword?: string) { return http.get<ColorView[]>('/erp/colors', { params: { keyword } }) }
+export function createColor(data: ColorRequest) { return http.post<ColorView>('/erp/colors', data) }
+export function updateProductColorMode(id: string | number, data: Omit<ProductColorMode, 'productId'>) { return http.put<ProductColorMode>(`/erp/products/${id}/color-management`, data) }
+export function getProductColorMode(id: string | number) { return http.get<ProductColorMode>(`/erp/products/${id}/color-management`) }
+export function listProductColors(id: string | number) { return http.get<ColorView[]>(`/erp/products/${id}/colors`) }
+export function bindProductColor(id: string | number, colorId: string | number) { return http.post<void>(`/erp/products/${id}/colors/${colorId}`) }
+export function unbindProductColor(id: string | number, colorId: string | number) { return http.delete<void>(`/erp/products/${id}/colors/${colorId}`) }
