@@ -18,9 +18,6 @@ export type ProductView = {
   minStock: number | null
   maxStock: number | null
   smallColorStock: boolean
-  colorManagementMode: 'NONE' | 'DYNAMIC' | 'BOUND'
-  batchManagementEnabled: boolean
-  gradeManagementEnabled: boolean
   stockAgeThreshold: number | null
   obsoleteDays: number | null
   shelfLifeDays: number | null

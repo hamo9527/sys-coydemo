@@ -99,3 +99,6 @@ export function getProductColorMode(id: string | number) { return http.get<Produ
 export function listProductColors(id: string | number) { return http.get<ColorView[]>(`/erp/products/${id}/colors`) }
 export function bindProductColor(id: string | number, colorId: string | number) { return http.post<void>(`/erp/products/${id}/colors/${colorId}`) }
 export function unbindProductColor(id: string | number, colorId: string | number) { return http.delete<void>(`/erp/products/${id}/colors/${colorId}`) }
+
+export function updateColor(id: string | number, data: ColorRequest) { return http.put<ColorView>(`/erp/colors/${id}`, data) }
+export function deleteColor(id: string | number) { return http.delete<void>(`/erp/colors/${id}`) }
