@@ -1,0 +1,2 @@
+package com.cailu.bom.erp.application;
+public interface ProductColorModeApplicationService { ProductColorModeView get(Long productId); ProductColorModeView update(Long productId, ProductColorModeCommand command); }
