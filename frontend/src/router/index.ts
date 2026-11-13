@@ -58,12 +58,6 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '仓库档案', module: 'master' },
       },
       {
-        path: 'erp/colors',
-        name: 'ErpColors',
-        component: () => import('@/views/erp/ColorListView.vue'),
-        meta: { title: '色号档案', module: 'master' },
-      },
-      {
         path: 'erp/product-color-settings',
         name: 'ErpProductColorSettings',
         component: () => import('@/views/erp/ProductColorSettingsView.vue'),
