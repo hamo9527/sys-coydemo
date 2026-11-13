@@ -4,6 +4,8 @@ import com.cailu.bom.common.api.PageResult;
 import com.cailu.bom.common.exception.BusinessException;
 import com.cailu.bom.erp.domain.model.PurchaseOrder;
 import com.cailu.bom.erp.domain.model.PurchaseOrderItem;
+import com.cailu.bom.erp.domain.model.ProductColorSettings;
+import com.cailu.bom.erp.domain.repository.ProductColorModeRepository;
 import com.cailu.bom.erp.domain.repository.PurchaseOrderRepository;
 import com.cailu.bom.erp.domain.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
     private static final String BIZ_TYPE_PURCHASE_INBOUND = "purchase_inbound";
 
     private final PurchaseOrderRepository purchaseOrderRepository;
+    private final ProductColorModeRepository productColorModeRepository;
     private final StockRepository stockRepository;
 
     @Override
@@ -29,7 +32,10 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
             throw new BusinessException("orderNo already exists");
         });
         List<PurchaseOrderItem> items = command.items().stream()
-                .map(i -> new PurchaseOrderItem(null, i.productId(), i.colorCode(), i.batchNo(), i.grade(), i.binName(), i.qty(), i.price(), null))
+                .map(i -> {
+                    validateDimensions(i.productId(), i.colorCode(), i.batchNo(), i.grade());
+                    return new PurchaseOrderItem(null, i.productId(), i.colorCode(), i.batchNo(), i.grade(), i.binName(), i.qty(), i.price(), null);
+                })
                 .toList();
         BigDecimal total = items.stream()
                 .map(PurchaseOrderItem::getAmount)
@@ -84,6 +90,20 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
             }
         }
         return toView(purchaseOrderRepository.updateStatus(completed.getId(), completed.getStatus()));
+    }
+
+    private void validateDimensions(Long productId, String colorCode, String batchNo, String grade) {
+        ProductColorSettings settings = productColorModeRepository.findByProductId(productId)
+                .orElseThrow(() -> new BusinessException("product not found", 404));
+        if ("NONE".equals(settings.colorManagementMode()) && colorCode != null && !colorCode.isBlank()) {
+            throw new BusinessException("该商品未启用色号管理");
+        }
+        if (!Boolean.TRUE.equals(settings.batchManagementEnabled()) && batchNo != null && !batchNo.isBlank()) {
+            throw new BusinessException("该商品未启用批次管理");
+        }
+        if (!Boolean.TRUE.equals(settings.gradeManagementEnabled()) && grade != null && !grade.isBlank()) {
+            throw new BusinessException("该商品未启用等级管理");
+        }
     }
 
     private PurchaseView toView(PurchaseOrder order) {
