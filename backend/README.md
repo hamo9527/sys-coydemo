@@ -66,6 +66,7 @@ cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p < backend\\sql\\V20260813__init.sq
 cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql\\V20260814__outbound.sql"
 cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql\\V20261104__expand_erp_product_profile.sql"
 cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql\\V20261112__erp_color_modes_and_warehouse_api.sql"
+cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql\\V20261113__stock_inventory_dimensions.sql"
 ```
 
 启动本分支后端时，默认值已经指向 `cailu_bom_inventory:3306` 和 `8081`。如需显式指定连接参数，可在 PowerShell 中设置：
