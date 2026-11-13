@@ -11,6 +11,7 @@ public record OutboundItemView(
         String productName,
         String brand,
         String spec,
+        String colorCode,
         String grade,
         String batchNo,
         BigDecimal setsQty,
