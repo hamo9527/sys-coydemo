@@ -4,7 +4,9 @@ import com.cailu.bom.common.api.PageResult;
 import com.cailu.bom.common.exception.BusinessException;
 import com.cailu.bom.erp.domain.model.OutboundOrder;
 import com.cailu.bom.erp.domain.model.OutboundOrderItem;
+import com.cailu.bom.erp.domain.model.ProductColorSettings;
 import com.cailu.bom.erp.domain.repository.OutboundOrderRepository;
+import com.cailu.bom.erp.domain.repository.ProductColorModeRepository;
 import com.cailu.bom.erp.domain.repository.ProductRepository;
 import com.cailu.bom.erp.domain.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
     private final OutboundOrderRepository outboundOrderRepository;
     private final StockRepository stockRepository;
     private final ProductRepository productRepository;
+    private final ProductColorModeRepository productColorModeRepository;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -43,6 +46,10 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
         BigDecimal totalBoxes = BigDecimal.ZERO;
         for (CreateOutboundCommand.Item item : command.items()) {
             Long productId = resolveProductId(item);
+            if (productId == null) {
+                throw new BusinessException("商品不存在，无法扣减库存");
+            }
+            validateDimensions(productId, item.colorCode(), item.batchNo(), item.grade());
             BigDecimal amount = item.qty().multiply(item.price() == null ? BigDecimal.ZERO : item.price());
             OutboundOrderItem domainItem = new OutboundOrderItem(
                     null, line++, item.position(), productId, item.sku(), item.productName(), item.brand(),
@@ -120,6 +127,20 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
             }
         }
         return toView(outboundOrderRepository.updateStatus(effective.getId(), effective.getStatus()));
+    }
+
+    private void validateDimensions(Long productId, String colorCode, String batchNo, String grade) {
+        ProductColorSettings settings = productColorModeRepository.findByProductId(productId)
+                .orElseThrow(() -> new BusinessException("product not found", 404));
+        if ("NONE".equals(settings.colorManagementMode()) && colorCode != null && !colorCode.isBlank()) {
+            throw new BusinessException("该商品未启用色号管理");
+        }
+        if (!Boolean.TRUE.equals(settings.batchManagementEnabled()) && batchNo != null && !batchNo.isBlank()) {
+            throw new BusinessException("该商品未启用批次管理");
+        }
+        if (!Boolean.TRUE.equals(settings.gradeManagementEnabled()) && grade != null && !grade.isBlank()) {
+            throw new BusinessException("该商品未启用等级管理");
+        }
     }
 
     private Long resolveProductId(CreateOutboundCommand.Item item) {
