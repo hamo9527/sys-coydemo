@@ -32,7 +32,7 @@ public class PurchaseController {
                 request.warehouseId(),
                 request.remark(),
                 request.items().stream()
-                        .map(i -> new CreatePurchaseCommand.Item(i.productId(), i.colorCode(), i.batchNo(), i.grade(), i.binName(), i.qty(), i.price()))
+                        .map(i -> new CreatePurchaseCommand.Item(i.productId(), i.qty(), i.price()))
                         .toList());
         return ResponseEntity.ok(ApiResponse.success(purchaseApplicationService.create(command)));
     }
