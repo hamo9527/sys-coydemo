@@ -46,6 +46,10 @@ export function previewProductsExcel(file: File) {
   return http.post<ProductImportRow[]>('/erp/products/imports/excel/preview', data)
 }
 
+export function listColorCodeSuggestions(productId: string | number, keyword = '') {
+  return http.get<string[]>('/erp/stocks/color-codes/suggestions', { params: { productId, keyword } })
+}
+
 export function listStocks(params: {
   warehouseId?: string | number
   productId?: string | number
