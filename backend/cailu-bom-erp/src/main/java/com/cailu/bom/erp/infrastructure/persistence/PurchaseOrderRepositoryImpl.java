@@ -29,6 +29,17 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
     }
 
     @Override
+    public Optional<PurchaseOrder> findByIdForUpdate(Long id) {
+        ErpPurchaseOrderDO row = erpPurchaseOrderMapper.selectOne(new LambdaQueryWrapper<ErpPurchaseOrderDO>()
+                .eq(ErpPurchaseOrderDO::getId, id)
+                .last("LIMIT 1 FOR UPDATE"));
+        if (row == null) {
+            return Optional.empty();
+        }
+        return Optional.of(toDomain(row, loadItems(row.getId())));
+    }
+
+    @Override
     public Optional<PurchaseOrder> findByOrderNo(String orderNo) {
         ErpPurchaseOrderDO row = erpPurchaseOrderMapper.selectOne(new LambdaQueryWrapper<ErpPurchaseOrderDO>()
                 .eq(ErpPurchaseOrderDO::getOrderNo, orderNo)
