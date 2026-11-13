@@ -47,10 +47,10 @@
         <el-table :data="form.items" border size="small">
           <el-table-column label="商品 ID" min-width="160">
             <template #default="{ row }">
-              <el-input v-model="row.productId" placeholder="productId" />
+              <el-input v-model="row.productId" placeholder="productId" @change="loadRowSettings(row)" />
             </template>
           </el-table-column>
-          <el-table-column label="色号" min-width="150">
+          <el-table-column v-if="row.colorManagementMode === 'DYNAMIC'" label="色号" min-width="150">
             <template #default="{ row }">
               <el-autocomplete
                 v-model="row.colorCode"
@@ -61,12 +61,12 @@
               />
             </template>
           </el-table-column>
-          <el-table-column label="批次" min-width="110">
+          <el-table-column v-if="row.batchManagementEnabled" label="批次" min-width="110">
             <template #default="{ row }">
               <el-input v-model="row.batchNo" size="small" clearable />
             </template>
           </el-table-column>
-          <el-table-column label="等级" min-width="100">
+          <el-table-column v-if="row.gradeManagementEnabled" label="等级" min-width="100">
             <template #default="{ row }">
               <el-input v-model="row.grade" size="small" clearable />
             </template>
@@ -109,8 +109,8 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
-import { createPurchase, listColorCodeSuggestions } from '@/api/erp'
-import type { CreatePurchaseItemRequest, CreatePurchaseRequest } from '@/types/erp'
+import { createPurchase, getProductColorMode, listColorCodeSuggestions } from '@/api/erp'
+import type { CreatePurchaseItemRequest, CreatePurchaseRequest, ProductColorMode } from '@/types/erp'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
@@ -121,13 +121,13 @@ const form = reactive<{
   supplierId: string
   warehouseId: string
   remark: string
-  items: Array<{ productId: string; colorCode: string; batchNo: string; grade: string; binName: string; qty: number; price: number }>
+  items: Array<{ productId: string; colorCode: string; batchNo: string; grade: string; binName: string; colorManagementMode: ProductColorMode['colorManagementMode']; batchManagementEnabled: boolean; gradeManagementEnabled: boolean; qty: number; price: number }>
 }>({
   orderNo: '',
   supplierId: '1',
   warehouseId: '1',
   remark: '',
-  items: [{ productId: '', colorCode: '', batchNo: '', grade: '', binName: '', qty: 1, price: 0 }],
+  items: [{ productId: '', colorCode: '', batchNo: '', grade: '', binName: '', colorManagementMode: 'NONE', batchManagementEnabled: false, gradeManagementEnabled: false, qty: 1, price: 0 }],
 })
 
 const rules: FormRules = {
@@ -137,7 +137,35 @@ const rules: FormRules = {
 }
 
 function addItem() {
-  form.items.push({ productId: '', colorCode: '', batchNo: '', grade: '', binName: '', qty: 1, price: 0 })
+  form.items.push({ productId: '', colorCode: '', batchNo: '', grade: '', binName: '', colorManagementMode: 'NONE', batchManagementEnabled: false, gradeManagementEnabled: false, qty: 1, price: 0 })
+}
+
+async function loadRowSettings(row: {
+  productId: string
+  colorCode: string
+  batchNo: string
+  grade: string
+  colorManagementMode: ProductColorMode['colorManagementMode']
+  batchManagementEnabled: boolean
+  gradeManagementEnabled: boolean
+}) {
+  const productId = row.productId.trim()
+  if (!productId) {
+    row.colorManagementMode = 'NONE'
+    row.batchManagementEnabled = false
+    row.gradeManagementEnabled = false
+    row.colorCode = ''
+    row.batchNo = ''
+    row.grade = ''
+    return
+  }
+  const config = await getProductColorMode(productId)
+  row.colorManagementMode = config.colorManagementMode
+  row.batchManagementEnabled = config.batchManagementEnabled
+  row.gradeManagementEnabled = config.gradeManagementEnabled
+  if (config.colorManagementMode !== 'DYNAMIC') row.colorCode = ''
+  if (!config.batchManagementEnabled) row.batchNo = ''
+  if (!config.gradeManagementEnabled) row.grade = ''
 }
 
 async function fetchColorSuggestions(
