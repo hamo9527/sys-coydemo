@@ -39,10 +39,15 @@ public class StockRepositoryImpl implements StockRepository {
     }
 
     @Override
-    public Optional<Stock> findByWarehouseAndProduct(Long warehouseId, Long productId) {
+    public Optional<Stock> findByDimension(Long warehouseId, Long productId, String colorCode,
+                                           String batchNo, String grade, String binName) {
         ErpStockDO row = erpStockMapper.selectOne(new LambdaQueryWrapper<ErpStockDO>()
                 .eq(ErpStockDO::getWarehouseId, warehouseId)
                 .eq(ErpStockDO::getProductId, productId)
+                .eq(ErpStockDO::getColorCode, normalize(colorCode))
+                .eq(ErpStockDO::getBatchNo, normalize(batchNo))
+                .eq(ErpStockDO::getGrade, normalize(grade))
+                .eq(ErpStockDO::getBinName, normalize(binName))
                 .last("LIMIT 1"));
         return Optional.ofNullable(row).map(this::toDomain);
     }
@@ -53,6 +58,10 @@ public class StockRepositoryImpl implements StockRepository {
         row.setId(stock.getId());
         row.setWarehouseId(stock.getWarehouseId());
         row.setProductId(stock.getProductId());
+        row.setColorCode(stock.getColorCode());
+        row.setBatchNo(stock.getBatchNo());
+        row.setGrade(stock.getGrade());
+        row.setBinName(stock.getBinName());
         row.setQuantity(stock.getQuantity());
         row.setLockedQty(stock.getLockedQty());
         if (row.getId() == null) {
@@ -64,58 +73,69 @@ public class StockRepositoryImpl implements StockRepository {
     }
 
     @Override
-    public Stock increase(Long warehouseId, Long productId, BigDecimal qty,
+    public Stock increase(Long warehouseId, Long productId, String colorCode, String batchNo,
+                          String grade, String binName, BigDecimal qty,
                           String bizType, Long bizId, String remark) {
         if (qty == null || qty.signum() <= 0) {
             throw new IllegalArgumentException("increase qty must be positive");
         }
-        Stock current = findByWarehouseAndProduct(warehouseId, productId)
-                .orElse(new Stock(null, warehouseId, productId, BigDecimal.ZERO, BigDecimal.ZERO));
+        String color = normalize(colorCode);
+        String batch = normalize(batchNo);
+        String productGrade = normalize(grade);
+        String bin = normalize(binName);
+        Stock current = findByDimension(warehouseId, productId, color, batch, productGrade, bin)
+                .orElse(new Stock(null, warehouseId, productId, color, batch, productGrade, bin,
+                        BigDecimal.ZERO, BigDecimal.ZERO));
         Stock updated = save(current.increase(qty));
-
-        ErpStockLedgerDO ledger = new ErpStockLedgerDO();
-        ledger.setWarehouseId(warehouseId);
-        ledger.setProductId(productId);
-        ledger.setBizType(bizType);
-        ledger.setBizId(bizId);
-        ledger.setChangeQty(qty);
-        ledger.setBalanceQty(updated.getQuantity());
-        ledger.setRemark(remark);
-        erpStockLedgerMapper.insert(ledger);
-
+        appendLedger(warehouseId, productId, color, batch, productGrade, bin,
+                bizType, bizId, qty, updated.getQuantity(), remark);
         return updated;
     }
 
     @Override
-    public Stock decrease(Long warehouseId, Long productId, BigDecimal qty,
+    public Stock decrease(Long warehouseId, Long productId, String colorCode, String batchNo,
+                          String grade, String binName, BigDecimal qty,
                           String bizType, Long bizId, String remark) {
         if (qty == null || qty.signum() <= 0) {
             throw new IllegalArgumentException("decrease qty must be positive");
         }
-        Stock current = findByWarehouseAndProduct(warehouseId, productId)
-                .orElseThrow(() -> new IllegalArgumentException("stock not found"));
-        Stock updated;
-        try {
-            updated = save(current.decrease(qty));
-        } catch (IllegalArgumentException ex) {
-            throw ex;
-        }
+        String color = normalize(colorCode);
+        String batch = normalize(batchNo);
+        String productGrade = normalize(grade);
+        String bin = normalize(binName);
+        Stock current = findByDimension(warehouseId, productId, color, batch, productGrade, bin)
+                .orElseThrow(() -> new IllegalArgumentException("stock not found for selected dimensions"));
+        Stock updated = save(current.decrease(qty));
+        appendLedger(warehouseId, productId, color, batch, productGrade, bin,
+                bizType, bizId, qty.negate(), updated.getQuantity(), remark);
+        return updated;
+    }
 
+    private void appendLedger(Long warehouseId, Long productId, String colorCode, String batchNo,
+                              String grade, String binName, String bizType, Long bizId,
+                              BigDecimal changeQty, BigDecimal balanceQty, String remark) {
         ErpStockLedgerDO ledger = new ErpStockLedgerDO();
         ledger.setWarehouseId(warehouseId);
         ledger.setProductId(productId);
+        ledger.setColorCode(colorCode);
+        ledger.setBatchNo(batchNo);
+        ledger.setGrade(grade);
+        ledger.setBinName(binName);
         ledger.setBizType(bizType);
         ledger.setBizId(bizId);
-        ledger.setChangeQty(qty.negate());
-        ledger.setBalanceQty(updated.getQuantity());
+        ledger.setChangeQty(changeQty);
+        ledger.setBalanceQty(balanceQty);
         ledger.setRemark(remark);
         erpStockLedgerMapper.insert(ledger);
-
-        return updated;
     }
 
     private Stock toDomain(ErpStockDO row) {
         return new Stock(row.getId(), row.getWarehouseId(), row.getProductId(),
+                row.getColorCode(), row.getBatchNo(), row.getGrade(), row.getBinName(),
                 row.getQuantity(), row.getLockedQty());
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
     }
 }
