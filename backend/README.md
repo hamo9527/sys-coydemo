@@ -40,11 +40,12 @@ backend/
 | GET | `/api/erp/products` | 商品分页列表 |
 | POST | `/api/erp/products` | 创建商品 |
 | GET | `/api/erp/products/{id}` | 商品详情 |
-| GET | `/api/erp/stocks` | 库存分页列表 |
+| GET | `/api/erp/stocks` | 按仓库、商品和库存维度查询库存 |
+| GET | `/api/erp/stocks/color-codes/suggestions` | 查询商品历史使用色号（入库输入联想） |
 | GET | `/api/erp/purchases` | 采购单分页 |
 | POST | `/api/erp/purchases` | 创建采购草稿 |
 | GET | `/api/erp/purchases/{id}` | 采购详情 |
-| POST | `/api/erp/purchases/{id}/inbounds` | 采购入库 |
+| POST | `/api/erp/purchases/{id}/inbounds` | 采购入库（请求体提交本次到货的库存维度） |
 | POST | `/api/oa/approvals` | 创建审批单 |
 | POST | `/api/oa/approvals/{id}/submissions` | 提交审批（draft→pending） |
 | POST | `/api/finance/receivables` | 创建应收 |
