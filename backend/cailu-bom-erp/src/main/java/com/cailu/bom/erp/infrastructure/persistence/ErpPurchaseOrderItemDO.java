@@ -19,6 +19,14 @@ public class ErpPurchaseOrderItemDO {
 
     private Long productId;
 
+    private String colorCode;
+
+    private String batchNo;
+
+    private String grade;
+
+    private String binName;
+
     private BigDecimal qty;
 
     private BigDecimal price;
