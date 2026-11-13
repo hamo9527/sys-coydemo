@@ -61,7 +61,7 @@ const routes: RouteRecordRaw[] = [
         path: 'erp/product-color-settings',
         name: 'ErpProductColorSettings',
         component: () => import('@/views/erp/ProductColorSettingsView.vue'),
-        meta: { title: '商品色号配置', module: 'master' },
+        meta: { title: '商品库存维度配置', module: 'master' },
       },
       {
         path: 'erp/stock',
