@@ -68,6 +68,10 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
                 ErpPurchaseOrderItemDO itemRow = new ErpPurchaseOrderItemDO();
                 itemRow.setOrderId(row.getId());
                 itemRow.setProductId(item.getProductId());
+                itemRow.setColorCode(item.getColorCode());
+                itemRow.setBatchNo(item.getBatchNo());
+                itemRow.setGrade(item.getGrade());
+                itemRow.setBinName(item.getBinName());
                 itemRow.setQty(item.getQty());
                 itemRow.setPrice(item.getPrice());
                 itemRow.setAmount(item.getAmount());
@@ -96,7 +100,7 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
                         .orderByAsc(ErpPurchaseOrderItemDO::getId))
                 .stream()
                 .map(item -> new PurchaseOrderItem(
-                        item.getId(), item.getProductId(), item.getQty(), item.getPrice(), item.getAmount()))
+                        item.getId(), item.getProductId(), item.getColorCode(), item.getBatchNo(), item.getGrade(), item.getBinName(), item.getQty(), item.getPrice(), item.getAmount()))
                 .toList();
     }
 
