@@ -20,6 +20,10 @@
       <el-table-column prop="id" label="ID" width="160" />
       <el-table-column prop="warehouseId" label="仓库 ID" width="140" />
       <el-table-column prop="productId" label="商品 ID" width="160" />
+      <el-table-column prop="colorCode" label="色号" min-width="110" />
+      <el-table-column prop="batchNo" label="批次" min-width="100" />
+      <el-table-column prop="grade" label="等级" width="90" />
+      <el-table-column prop="binName" label="货位" width="100" />
       <el-table-column prop="quantity" label="可用数量" width="120" />
       <el-table-column prop="lockedQty" label="锁定数量" width="120" />
     </el-table>
