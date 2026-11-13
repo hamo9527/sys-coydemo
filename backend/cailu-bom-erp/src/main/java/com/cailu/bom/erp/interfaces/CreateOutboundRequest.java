@@ -59,7 +59,7 @@ public record CreateOutboundRequest(
             BigDecimal stdPrice,
             BigDecimal discount,
             @NotNull BigDecimal price,
-            Long warehouseId,
+            @NotNull Long warehouseId,
             String warehouseCode,
             String warehouseName,
             String binName,
