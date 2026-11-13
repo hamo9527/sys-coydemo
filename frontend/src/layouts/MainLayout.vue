@@ -394,7 +394,8 @@ function openProductResult(product: ProductView) {
   router.push({ path: '/erp/products', query: { keyword: productKeyword } })
 }
 
-function handleSearchKeydown(event: KeyboardEvent) {
+function handleSearchKeydown(event: Event | KeyboardEvent) {
+  if (!(event instanceof KeyboardEvent)) return
   if (event.key === 'Escape') {
     searchVisible.value = false
     return
