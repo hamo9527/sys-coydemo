@@ -49,6 +49,9 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
             if (productId == null) {
                 throw new BusinessException("商品不存在，无法扣减库存");
             }
+            if (item.warehouseId() == null) {
+                throw new BusinessException("请选择出库仓库");
+            }
             validateDimensions(productId, item.colorCode(), item.batchNo(), item.grade());
             BigDecimal amount = item.qty().multiply(item.price() == null ? BigDecimal.ZERO : item.price());
             OutboundOrderItem domainItem = new OutboundOrderItem(
@@ -107,9 +110,6 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
         }
 
         for (OutboundOrderItem item : order.getItems()) {
-            if (item.getProductId() == null || item.getWarehouseId() == null) {
-                continue;
-            }
             try {
                 stockRepository.decrease(
                         item.getWarehouseId(),
