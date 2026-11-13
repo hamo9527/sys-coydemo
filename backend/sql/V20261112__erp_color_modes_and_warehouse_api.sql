@@ -1,4 +1,4 @@
-USE cailu_bom;
+USE cailu_bom_inventory;
 
 ALTER TABLE erp_product
     ADD COLUMN color_management_mode VARCHAR(16) NOT NULL DEFAULT 'NONE' COMMENT 'NONE无色号/DYNAMIC动态色号/BOUND档案绑定',
