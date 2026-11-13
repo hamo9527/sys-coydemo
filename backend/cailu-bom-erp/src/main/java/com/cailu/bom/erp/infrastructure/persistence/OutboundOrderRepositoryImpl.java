@@ -143,6 +143,7 @@ public class OutboundOrderRepositoryImpl implements OutboundOrderRepository {
         row.setProductName(item.getProductName());
         row.setBrand(item.getBrand());
         row.setSpec(item.getSpec());
+        row.setColorCode(item.getColorCode());
         row.setGrade(item.getGrade());
         row.setBatchNo(item.getBatchNo());
         row.setSetsQty(item.getSetsQty());
@@ -167,7 +168,7 @@ public class OutboundOrderRepositoryImpl implements OutboundOrderRepository {
     private OutboundOrderItem toItemDomain(ErpOutboundOrderItemDO row) {
         return new OutboundOrderItem(
                 row.getId(), row.getLineNo(), row.getPosition(), row.getProductId(), row.getSku(),
-                row.getProductName(), row.getBrand(), row.getSpec(), row.getGrade(), row.getBatchNo(),
+                row.getProductName(), row.getBrand(), row.getSpec(), row.getColorCode(), row.getGrade(), row.getBatchNo(),
                 row.getSetsQty(), row.getBoxes(), row.getPieces(), row.getQty(), row.getUnit(),
                 row.getStdPrice(), row.getDiscount(), row.getPrice(), row.getAmount(),
                 row.getWarehouseId(), row.getWarehouseCode(), row.getWarehouseName(), row.getBinName(),
