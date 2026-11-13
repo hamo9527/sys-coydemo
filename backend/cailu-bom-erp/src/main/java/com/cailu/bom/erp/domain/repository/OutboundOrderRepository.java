@@ -9,6 +9,8 @@ public interface OutboundOrderRepository {
 
     Optional<OutboundOrder> findById(Long id);
 
+    Optional<OutboundOrder> findByIdForUpdate(Long id);
+
     Optional<OutboundOrder> findByBillNo(String billNo);
 
     PageResult<OutboundOrder> page(long page, long size);
