@@ -29,6 +29,17 @@ public class OutboundOrderRepositoryImpl implements OutboundOrderRepository {
     }
 
     @Override
+    public Optional<OutboundOrder> findByIdForUpdate(Long id) {
+        ErpOutboundOrderDO row = erpOutboundOrderMapper.selectOne(new LambdaQueryWrapper<ErpOutboundOrderDO>()
+                .eq(ErpOutboundOrderDO::getId, id)
+                .last("LIMIT 1 FOR UPDATE"));
+        if (row == null) {
+            return Optional.empty();
+        }
+        return Optional.of(toDomain(row, loadItems(row.getId())));
+    }
+
+    @Override
     public Optional<OutboundOrder> findByBillNo(String billNo) {
         ErpOutboundOrderDO row = erpOutboundOrderMapper.selectOne(new LambdaQueryWrapper<ErpOutboundOrderDO>()
                 .eq(ErpOutboundOrderDO::getBillNo, billNo)
