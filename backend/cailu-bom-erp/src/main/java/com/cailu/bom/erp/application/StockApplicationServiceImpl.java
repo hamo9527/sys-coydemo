@@ -4,6 +4,8 @@ import com.cailu.bom.common.api.PageResult;
 import com.cailu.bom.erp.domain.model.Stock;
 import com.cailu.bom.erp.domain.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,6 +22,11 @@ public class StockApplicationServiceImpl implements StockApplicationService {
                 result.total(),
                 result.page(),
                 result.size());
+    }
+
+    @Override
+    public List<String> suggestColorCodes(Long productId, String keyword) {
+        return stockRepository.suggestColorCodes(productId, keyword);
     }
 
     private StockView toView(Stock stock) {
