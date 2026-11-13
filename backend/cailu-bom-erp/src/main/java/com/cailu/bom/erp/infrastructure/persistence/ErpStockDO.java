@@ -21,6 +21,14 @@ public class ErpStockDO extends BaseEntity {
 
     private Long productId;
 
+    private String colorCode;
+
+    private String batchNo;
+
+    private String grade;
+
+    private String binName;
+
     private BigDecimal quantity;
 
     private BigDecimal lockedQty;
