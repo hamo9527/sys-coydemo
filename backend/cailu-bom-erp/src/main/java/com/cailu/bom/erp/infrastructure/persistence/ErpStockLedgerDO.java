@@ -24,6 +24,14 @@ public class ErpStockLedgerDO {
 
     private Long productId;
 
+    private String colorCode;
+
+    private String batchNo;
+
+    private String grade;
+
+    private String binName;
+
     private String bizType;
 
     private Long bizId;
