@@ -56,7 +56,7 @@ public class OutboundController {
                 request.totalWeight(),
                 request.items().stream()
                         .map(i -> new CreateOutboundCommand.Item(
-                                i.position(), i.productId(), i.sku(), i.productName(), i.brand(), i.spec(),
+                                i.position(), i.productId(), i.sku(), i.productName(), i.brand(), i.spec(), i.colorCode(),
                                 i.grade(), i.batchNo(), i.setsQty(), i.boxes(), i.pieces(), i.qty(), i.unit(),
                                 i.stdPrice(), i.discount(), i.price(), i.warehouseId(), i.warehouseCode(),
                                 i.warehouseName(), i.binName(), i.feeType(),
