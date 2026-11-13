@@ -24,6 +24,7 @@ public class StockApplicationServiceImpl implements StockApplicationService {
 
     private StockView toView(Stock stock) {
         return new StockView(stock.getId(), stock.getWarehouseId(), stock.getProductId(),
+                stock.getColorCode(), stock.getBatchNo(), stock.getGrade(), stock.getBinName(),
                 stock.getQuantity(), stock.getLockedQty());
     }
 }
