@@ -123,12 +123,12 @@ export type PurchaseView = {
 
 export type CreatePurchaseItemRequest = {
   productId: number | string
-  colorCode?: string
-  batchNo?: string
-  grade?: string
-  binName?: string
   qty: number
   price: number
+}
+
+export type InboundPurchaseRequest = {
+  items: Array<{ itemId: Id; colorCode?: string; batchNo?: string; grade?: string; binName?: string }>
 }
 
 export type CreatePurchaseRequest = {
