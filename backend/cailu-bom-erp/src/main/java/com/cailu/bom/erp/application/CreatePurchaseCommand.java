@@ -25,7 +25,8 @@ public record CreatePurchaseCommand(
         }
     }
 
-    public record Item(Long productId, BigDecimal qty, BigDecimal price) {
+    public record Item(Long productId, String colorCode, String batchNo, String grade,
+                       String binName, BigDecimal qty, BigDecimal price) {
         public Item {
             if (productId == null) {
                 throw new IllegalArgumentException("productId required");
