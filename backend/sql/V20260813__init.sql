@@ -1,9 +1,9 @@
 -- V20260813__init.sql
 -- 建材管理系统初始化 Schema（MySQL 8 / utf8mb4）
--- Docker: MYSQL_DATABASE=cailu_bom 时仍可安全执行；本地手动执行时会创建库。
+-- Docker: MYSQL_DATABASE=cailu_bom_inventory 时仍可安全执行；本地手动执行时会创建库。
 
-CREATE DATABASE IF NOT EXISTS cailu_bom DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE cailu_bom;
+CREATE DATABASE IF NOT EXISTS cailu_bom_inventory DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE cailu_bom_inventory;
 
 -- ========== system ==========
 CREATE TABLE IF NOT EXISTS sys_org (
