@@ -32,10 +32,7 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
             throw new BusinessException("orderNo already exists");
         });
         List<PurchaseOrderItem> items = command.items().stream()
-                .map(i -> {
-                    validateDimensions(i.productId(), i.colorCode(), i.batchNo(), i.grade());
-                    return new PurchaseOrderItem(null, i.productId(), i.colorCode(), i.batchNo(), i.grade(), i.binName(), i.qty(), i.price(), null);
-                })
+                .map(i -> new PurchaseOrderItem(null, i.productId(), "", "", "", "", i.qty(), i.price(), null))
                 .toList();
         BigDecimal total = items.stream()
                 .map(PurchaseOrderItem::getAmount)
@@ -63,7 +60,7 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PurchaseView inbound(Long id) {
+    public PurchaseView inbound(Long id, InboundPurchaseCommand command) {
         PurchaseOrder order = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("purchase order not found", 404));
         PurchaseOrder completed;
@@ -72,7 +69,29 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
         } catch (IllegalArgumentException ex) {
             throw new BusinessException(ex.getMessage());
         }
-        for (PurchaseOrderItem item : order.getItems()) {
+        if (command.items().size() != order.getItems().size()) {
+            throw new BusinessException("入库明细与采购明细不一致");
+        }
+        java.util.Map<Long, InboundPurchaseCommand.Item> inboundItems = command.items().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        InboundPurchaseCommand.Item::itemId, item -> item,
+                        (first, second) -> {
+                            throw new BusinessException("入库明细存在重复商品行");
+                        }));
+        List<PurchaseOrderItem> completedItems = order.getItems().stream().map(item -> {
+            InboundPurchaseCommand.Item inbound = inboundItems.remove(item.getId());
+            if (inbound == null) {
+                throw new BusinessException("入库明细缺少采购商品行");
+            }
+            validateDimensions(item.getProductId(), inbound.colorCode(), inbound.batchNo(), inbound.grade());
+            return new PurchaseOrderItem(item.getId(), item.getProductId(), inbound.colorCode(),
+                    inbound.batchNo(), inbound.grade(), inbound.binName(), item.getQty(), item.getPrice(), item.getAmount());
+        }).toList();
+        if (!inboundItems.isEmpty()) {
+            throw new BusinessException("入库明细包含不属于当前采购单的商品行");
+        }
+        purchaseOrderRepository.updateItems(order.getId(), completedItems);
+        for (PurchaseOrderItem item : completedItems) {
             try {
                 stockRepository.increase(
                         order.getWarehouseId(),
