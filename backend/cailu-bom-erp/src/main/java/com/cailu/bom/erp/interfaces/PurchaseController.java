@@ -3,6 +3,7 @@ package com.cailu.bom.erp.interfaces;
 import com.cailu.bom.common.api.ApiResponse;
 import com.cailu.bom.common.api.PageResult;
 import com.cailu.bom.erp.application.CreatePurchaseCommand;
+import com.cailu.bom.erp.application.InboundPurchaseCommand;
 import com.cailu.bom.erp.application.PurchaseApplicationService;
 import com.cailu.bom.erp.application.PurchaseView;
 import jakarta.validation.Valid;
@@ -49,7 +50,13 @@ public class PurchaseController {
     }
 
     @PostMapping("/{id}/inbounds")
-    public ResponseEntity<ApiResponse<PurchaseView>> inbound(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.success(purchaseApplicationService.inbound(id)));
+    public ResponseEntity<ApiResponse<PurchaseView>> inbound(
+            @PathVariable Long id,
+            @Valid @RequestBody InboundPurchaseRequest request) {
+        InboundPurchaseCommand command = new InboundPurchaseCommand(request.items().stream()
+                .map(i -> new InboundPurchaseCommand.Item(
+                        i.itemId(), i.colorCode(), i.batchNo(), i.grade(), i.binName()))
+                .toList());
+        return ResponseEntity.ok(ApiResponse.success(purchaseApplicationService.inbound(id, command)));
     }
 }
