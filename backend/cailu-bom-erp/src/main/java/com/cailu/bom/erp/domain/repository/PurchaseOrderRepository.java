@@ -12,6 +12,8 @@ public interface PurchaseOrderRepository {
 
     Optional<PurchaseOrder> findById(Long id);
 
+    Optional<PurchaseOrder> findByIdForUpdate(Long id);
+
     Optional<PurchaseOrder> findByOrderNo(String orderNo);
 
     PageResult<PurchaseOrder> page(long page, long size);
