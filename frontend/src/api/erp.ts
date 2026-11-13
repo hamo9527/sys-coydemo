@@ -4,6 +4,7 @@ import type {
   CreateOutboundRequest,
   CreateProductRequest,
   CreatePurchaseRequest,
+  InboundPurchaseRequest,
   OutboundView,
   ProductView,
   ProductImportRow,
@@ -71,8 +72,8 @@ export function createPurchase(data: CreatePurchaseRequest) {
   return http.post<PurchaseView>('/erp/purchases', data)
 }
 
-export function inboundPurchase(id: string | number) {
-  return http.post<PurchaseView>(`/erp/purchases/${id}/inbounds`)
+export function inboundPurchase(id: string | number, data: InboundPurchaseRequest) {
+  return http.post<PurchaseView>(`/erp/purchases/${id}/inbounds`, data)
 }
 
 export function listOutbounds(params: { page?: number; size?: number }) {
