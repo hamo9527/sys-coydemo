@@ -17,6 +17,10 @@ public record CreatePurchaseRequest(
 ) {
     public record Item(
             @NotNull Long productId,
+            String colorCode,
+            String batchNo,
+            String grade,
+            String binName,
             @NotNull BigDecimal qty,
             @NotNull BigDecimal price
     ) {
