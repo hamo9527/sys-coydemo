@@ -46,7 +46,7 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
             BigDecimal amount = item.qty().multiply(item.price() == null ? BigDecimal.ZERO : item.price());
             OutboundOrderItem domainItem = new OutboundOrderItem(
                     null, line++, item.position(), productId, item.sku(), item.productName(), item.brand(),
-                    item.spec(), item.grade(), item.batchNo(), item.setsQty(), item.boxes(), item.pieces(),
+                    item.spec(), item.colorCode(), item.grade(), item.batchNo(), item.setsQty(), item.boxes(), item.pieces(),
                     item.qty(), item.unit(), item.stdPrice(), item.discount(), item.price(), amount,
                     item.warehouseId(), item.warehouseCode(), item.warehouseName(), item.binName(),
                     item.feeType(), item.occupy(), item.countPerf());
@@ -107,6 +107,10 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
                 stockRepository.decrease(
                         item.getWarehouseId(),
                         item.getProductId(),
+                        item.getColorCode(),
+                        item.getBatchNo(),
+                        item.getGrade(),
+                        item.getBinName(),
                         item.getQty(),
                         BIZ_TYPE_SALES_OUTBOUND,
                         order.getId(),
@@ -137,7 +141,7 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
         List<OutboundItemView> items = order.getItems().stream()
                 .map(i -> new OutboundItemView(
                         i.getId(), i.getLineNo(), i.getPosition(), i.getProductId(), i.getSku(),
-                        i.getProductName(), i.getBrand(), i.getSpec(), i.getGrade(), i.getBatchNo(),
+                        i.getProductName(), i.getBrand(), i.getSpec(), i.getColorCode(), i.getGrade(), i.getBatchNo(),
                         i.getSetsQty(), i.getBoxes(), i.getPieces(), i.getQty(), i.getUnit(),
                         i.getStdPrice(), i.getDiscount(), i.getPrice(), i.getAmount(),
                         i.getWarehouseId(), i.getWarehouseCode(), i.getWarehouseName(), i.getBinName(),
