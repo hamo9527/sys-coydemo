@@ -15,6 +15,7 @@ public class OutboundOrderItem {
     private final String productName;
     private final String brand;
     private final String spec;
+    private final String colorCode;
     private final String grade;
     private final String batchNo;
     private final BigDecimal setsQty;
@@ -35,7 +36,7 @@ public class OutboundOrderItem {
     private final boolean countPerf;
 
     public OutboundOrderItem(Long id, Integer lineNo, String position, Long productId, String sku,
-                             String productName, String brand, String spec, String grade, String batchNo,
+                             String productName, String brand, String spec, String colorCode, String grade, String batchNo,
                              BigDecimal setsQty, BigDecimal boxes, BigDecimal pieces, BigDecimal qty,
                              String unit, BigDecimal stdPrice, BigDecimal discount, BigDecimal price,
                              BigDecimal amount, Long warehouseId, String warehouseCode, String warehouseName,
@@ -54,6 +55,7 @@ public class OutboundOrderItem {
         this.productName = productName;
         this.brand = brand;
         this.spec = spec;
+        this.colorCode = colorCode == null ? "" : colorCode.trim();
         this.grade = grade;
         this.batchNo = batchNo;
         this.setsQty = setsQty == null ? BigDecimal.ZERO : setsQty;
