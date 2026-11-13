@@ -1,6 +1,6 @@
 -- Expand product master data to match the 商品档案 field specification.
--- Apply once to existing cailu_bom databases after V20260813__init.sql.
-USE cailu_bom;
+-- Apply once to existing cailu_bom_inventory databases after V20260813__init.sql.
+USE cailu_bom_inventory;
 
 UPDATE erp_product SET unit = '' WHERE unit IS NULL;
 
