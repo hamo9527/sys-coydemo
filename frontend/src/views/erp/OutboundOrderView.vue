@@ -285,6 +285,11 @@
         <el-table-column prop="name" label="商品名称" min-width="150" show-overflow-tooltip />
         <el-table-column prop="brand" label="品牌名称" min-width="90" />
         <el-table-column prop="spec" label="商品规格" min-width="110" />
+        <el-table-column label="色号" min-width="110">
+          <template #default="{ row }">
+            <el-input v-model="row.colorCode" size="small" placeholder="可自由输入" />
+          </template>
+        </el-table-column>
         <el-table-column label="商品等级" min-width="100">
           <template #default="{ row }">
             <el-select v-model="row.grade" size="small" style="width: 100%">
@@ -294,7 +299,7 @@
             </el-select>
           </template>
         </el-table-column>
-        <el-table-column label="批次/色号" min-width="100">
+        <el-table-column label="批次" min-width="100">
           <template #default="{ row }">
             <el-input v-model="row.batch" size="small" />
           </template>
@@ -409,6 +414,7 @@ type OutboundLine = {
   name: string
   brand: string
   spec: string
+  colorCode: string
   grade: string
   batch: string
   sets: number
@@ -467,8 +473,9 @@ const lines = ref<OutboundLine[]>([
     name: 'D5-L15701-BH4伊丽白',
     brand: '大角鱼',
     spec: '750*1500',
+    colorCode: 'Y48',
     grade: '优等',
-    batch: 'Y48',
+    batch: '',
     sets: 0,
     boxes: 0,
     pieces: 20,
