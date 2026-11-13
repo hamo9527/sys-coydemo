@@ -50,32 +50,6 @@
               <el-input v-model="row.productId" placeholder="productId" @change="loadRowSettings(row)" />
             </template>
           </el-table-column>
-          <el-table-column v-if="row.colorManagementMode === 'DYNAMIC'" label="色号" min-width="150">
-            <template #default="{ row }">
-              <el-autocomplete
-                v-model="row.colorCode"
-                size="small"
-                clearable
-                placeholder="可直接输入或选择历史色号"
-                :fetch-suggestions="(queryString, callback) => fetchColorSuggestions(queryString, callback, row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column v-if="row.batchManagementEnabled" label="批次" min-width="110">
-            <template #default="{ row }">
-              <el-input v-model="row.batchNo" size="small" clearable />
-            </template>
-          </el-table-column>
-          <el-table-column v-if="row.gradeManagementEnabled" label="等级" min-width="100">
-            <template #default="{ row }">
-              <el-input v-model="row.grade" size="small" clearable />
-            </template>
-          </el-table-column>
-          <el-table-column label="货位" min-width="110">
-            <template #default="{ row }">
-              <el-input v-model="row.binName" size="small" clearable />
-            </template>
-          </el-table-column>
           <el-table-column label="数量 qty" width="140">
             <template #default="{ row }">
               <el-input-number v-model="row.qty" :min="0.0001" :precision="4" controls-position="right" />
@@ -109,8 +83,8 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
-import { createPurchase, getProductColorMode, listColorCodeSuggestions } from '@/api/erp'
-import type { CreatePurchaseItemRequest, CreatePurchaseRequest, ProductColorMode } from '@/types/erp'
+import { createPurchase } from '@/api/erp'
+import type { CreatePurchaseItemRequest, CreatePurchaseRequest } from '@/types/erp'
 
 const router = useRouter()
 const formRef = ref<FormInstance>()
@@ -121,13 +95,13 @@ const form = reactive<{
   supplierId: string
   warehouseId: string
   remark: string
-  items: Array<{ productId: string; colorCode: string; batchNo: string; grade: string; binName: string; colorManagementMode: ProductColorMode['colorManagementMode']; batchManagementEnabled: boolean; gradeManagementEnabled: boolean; qty: number; price: number }>
+  items: Array<{ productId: string; qty: number; price: number }>
 }>({
   orderNo: '',
   supplierId: '1',
   warehouseId: '1',
   remark: '',
-  items: [{ productId: '', colorCode: '', batchNo: '', grade: '', binName: '', colorManagementMode: 'NONE', batchManagementEnabled: false, gradeManagementEnabled: false, qty: 1, price: 0 }],
+  items: [{ productId: '', qty: 1, price: 0 }],
 })
 
 const rules: FormRules = {
@@ -137,53 +111,7 @@ const rules: FormRules = {
 }
 
 function addItem() {
-  form.items.push({ productId: '', colorCode: '', batchNo: '', grade: '', binName: '', colorManagementMode: 'NONE', batchManagementEnabled: false, gradeManagementEnabled: false, qty: 1, price: 0 })
-}
-
-async function loadRowSettings(row: {
-  productId: string
-  colorCode: string
-  batchNo: string
-  grade: string
-  colorManagementMode: ProductColorMode['colorManagementMode']
-  batchManagementEnabled: boolean
-  gradeManagementEnabled: boolean
-}) {
-  const productId = row.productId.trim()
-  if (!productId) {
-    row.colorManagementMode = 'NONE'
-    row.batchManagementEnabled = false
-    row.gradeManagementEnabled = false
-    row.colorCode = ''
-    row.batchNo = ''
-    row.grade = ''
-    return
-  }
-  const config = await getProductColorMode(productId)
-  row.colorManagementMode = config.colorManagementMode
-  row.batchManagementEnabled = config.batchManagementEnabled
-  row.gradeManagementEnabled = config.gradeManagementEnabled
-  if (config.colorManagementMode !== 'DYNAMIC') row.colorCode = ''
-  if (!config.batchManagementEnabled) row.batchNo = ''
-  if (!config.gradeManagementEnabled) row.grade = ''
-}
-
-async function fetchColorSuggestions(
-  queryString: string,
-  callback: (suggestions: Array<{ value: string }>) => void,
-  row: { productId: string },
-) {
-  const productId = row.productId.trim()
-  if (!productId) {
-    callback([])
-    return
-  }
-  try {
-    const suggestions = await listColorCodeSuggestions(productId, queryString)
-    callback(suggestions.map((value) => ({ value })))
-  } catch {
-    callback([])
-  }
+  form.items.push({ productId: '', qty: 1, price: 0 })
 }
 
 function removeItem(index: number) {
@@ -198,10 +126,6 @@ function buildPayload(): CreatePurchaseRequest {
     .filter((item) => String(item.productId).trim())
     .map((item) => ({
       productId: String(item.productId).trim(),
-      colorCode: item.colorCode.trim() || undefined,
-      batchNo: item.batchNo.trim() || undefined,
-      grade: item.grade.trim() || undefined,
-      binName: item.binName.trim() || undefined,
       qty: item.qty,
       price: item.price,
     }))
