@@ -20,8 +20,8 @@
       <el-table-column label="状态" width="100"><template #default="{ row }">{{ row.status === 1 ? '启用' : '停用' }}</template></el-table-column>
       <el-table-column label="操作" width="160" fixed="right">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
-          <el-button link type="danger" @click="remove(row)">删除</el-button>
+          <el-button link type="primary" @click="openEdit(row as WarehouseView)">编辑</el-button>
+          <el-button link type="danger" @click="remove(row as WarehouseView)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
