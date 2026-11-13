@@ -10,5 +10,5 @@ public interface PurchaseApplicationService {
 
     PageResult<PurchaseView> list(long page, long size);
 
-    PurchaseView inbound(Long id);
+    PurchaseView inbound(Long id, InboundPurchaseCommand command);
 }
