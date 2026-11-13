@@ -47,7 +47,7 @@
         <el-table :data="form.items" border size="small">
           <el-table-column label="商品 ID" min-width="160">
             <template #default="{ row }">
-              <el-input v-model="row.productId" placeholder="productId" @change="loadRowSettings(row)" />
+              <el-input v-model="row.productId" placeholder="productId" />
             </template>
           </el-table-column>
           <el-table-column label="数量 qty" width="140">
