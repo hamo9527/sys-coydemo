@@ -135,11 +135,20 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
         if ("NONE".equals(settings.colorManagementMode()) && colorCode != null && !colorCode.isBlank()) {
             throw new BusinessException("该商品未启用色号管理");
         }
+        if ("DYNAMIC".equals(settings.colorManagementMode()) && (colorCode == null || colorCode.isBlank())) {
+            throw new BusinessException("请填写商品色号");
+        }
         if (!Boolean.TRUE.equals(settings.batchManagementEnabled()) && batchNo != null && !batchNo.isBlank()) {
             throw new BusinessException("该商品未启用批次管理");
         }
+        if (Boolean.TRUE.equals(settings.batchManagementEnabled()) && (batchNo == null || batchNo.isBlank())) {
+            throw new BusinessException("请填写商品批次");
+        }
         if (!Boolean.TRUE.equals(settings.gradeManagementEnabled()) && grade != null && !grade.isBlank()) {
             throw new BusinessException("该商品未启用等级管理");
+        }
+        if (Boolean.TRUE.equals(settings.gradeManagementEnabled()) && (grade == null || grade.isBlank())) {
+            throw new BusinessException("请填写商品等级");
         }
     }
 
