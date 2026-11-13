@@ -84,6 +84,21 @@ public class PurchaseOrderRepositoryImpl implements PurchaseOrderRepository {
     }
 
     @Override
+    public void updateItems(Long orderId, List<PurchaseOrderItem> items) {
+        for (PurchaseOrderItem item : items) {
+            ErpPurchaseOrderItemDO row = erpPurchaseOrderItemMapper.selectById(item.getId());
+            if (row == null || !orderId.equals(row.getOrderId())) {
+                throw new IllegalArgumentException("purchase item not found");
+            }
+            row.setColorCode(item.getColorCode());
+            row.setBatchNo(item.getBatchNo());
+            row.setGrade(item.getGrade());
+            row.setBinName(item.getBinName());
+            erpPurchaseOrderItemMapper.updateById(row);
+        }
+    }
+
+    @Override
     public PurchaseOrder updateStatus(Long id, String status) {
         ErpPurchaseOrderDO row = erpPurchaseOrderMapper.selectById(id);
         if (row == null) {
