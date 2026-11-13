@@ -100,7 +100,7 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public OutboundView confirm(Long id) {
-        OutboundOrder order = outboundOrderRepository.findById(id)
+        OutboundOrder order = outboundOrderRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new BusinessException("outbound order not found", 404));
         OutboundOrder effective;
         try {
