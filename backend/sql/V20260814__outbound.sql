@@ -1,7 +1,7 @@
 -- V20260814__outbound.sql
 -- 销售出库单（对齐出库单填写页）
 
-USE cailu_bom;
+USE cailu_bom_inventory;
 
 CREATE TABLE IF NOT EXISTS erp_outbound_order (
     id              BIGINT         NOT NULL PRIMARY KEY,
