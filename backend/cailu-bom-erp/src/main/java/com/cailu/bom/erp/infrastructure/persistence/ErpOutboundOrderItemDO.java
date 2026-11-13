@@ -21,6 +21,7 @@ public class ErpOutboundOrderItemDO {
     private String productName;
     private String brand;
     private String spec;
+    private String colorCode;
     private String grade;
     private String batchNo;
     private BigDecimal setsQty;
