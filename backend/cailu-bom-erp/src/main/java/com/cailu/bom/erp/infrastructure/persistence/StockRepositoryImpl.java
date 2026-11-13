@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -50,6 +51,11 @@ public class StockRepositoryImpl implements StockRepository {
                 .eq(ErpStockDO::getBinName, normalize(binName))
                 .last("LIMIT 1"));
         return Optional.ofNullable(row).map(this::toDomain);
+    }
+
+    @Override
+    public List<String> suggestColorCodes(Long productId, String keyword) {
+        return erpStockMapper.selectColorCodeSuggestions(productId, keyword == null ? "" : keyword.trim());
     }
 
     @Override
