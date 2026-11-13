@@ -302,7 +302,6 @@ export const sideMenus: SideMenuItem[] = [
           { title: '客户档案', path: '/placeholder/master/customer' },
           { title: '供应商档案', path: '/placeholder/master/supplier' },
           { title: '仓库档案', path: '/erp/warehouses', ready: true },
-          { title: '色号档案', path: '/erp/colors', ready: true },
           { title: '商品色号配置', path: '/erp/product-color-settings', ready: true },
         ],
       },
