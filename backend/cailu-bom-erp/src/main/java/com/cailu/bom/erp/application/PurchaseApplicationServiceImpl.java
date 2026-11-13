@@ -29,7 +29,7 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
             throw new BusinessException("orderNo already exists");
         });
         List<PurchaseOrderItem> items = command.items().stream()
-                .map(i -> new PurchaseOrderItem(null, i.productId(), i.qty(), i.price(), null))
+                .map(i -> new PurchaseOrderItem(null, i.productId(), i.colorCode(), i.batchNo(), i.grade(), i.binName(), i.qty(), i.price(), null))
                 .toList();
         BigDecimal total = items.stream()
                 .map(PurchaseOrderItem::getAmount)
@@ -71,6 +71,10 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
                 stockRepository.increase(
                         order.getWarehouseId(),
                         item.getProductId(),
+                        item.getColorCode(),
+                        item.getBatchNo(),
+                        item.getGrade(),
+                        item.getBinName(),
                         item.getQty(),
                         BIZ_TYPE_PURCHASE_INBOUND,
                         order.getId(),
@@ -84,7 +88,7 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
 
     private PurchaseView toView(PurchaseOrder order) {
         List<PurchaseItemView> items = order.getItems().stream()
-                .map(i -> new PurchaseItemView(i.getId(), i.getProductId(), i.getQty(), i.getPrice(), i.getAmount()))
+                .map(i -> new PurchaseItemView(i.getId(), i.getProductId(), i.getColorCode(), i.getBatchNo(), i.getGrade(), i.getBinName(), i.getQty(), i.getPrice(), i.getAmount()))
                 .toList();
         return new PurchaseView(order.getId(), order.getOrderNo(), order.getSupplierId(),
                 order.getWarehouseId(), order.getStatus(), order.getTotalAmount(), order.getRemark(), items);
