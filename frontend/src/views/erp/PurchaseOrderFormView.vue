@@ -178,8 +178,12 @@ async function fetchColorSuggestions(
     callback([])
     return
   }
-  const suggestions = await listColorCodeSuggestions(productId, queryString)
-  callback(suggestions.map((value) => ({ value })))
+  try {
+    const suggestions = await listColorCodeSuggestions(productId, queryString)
+    callback(suggestions.map((value) => ({ value })))
+  } catch {
+    callback([])
+  }
 }
 
 function removeItem(index: number) {
