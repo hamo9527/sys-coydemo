@@ -43,9 +43,9 @@
       <el-table-column prop="remark" label="备注" min-width="160" />
       <el-table-column label="操作" fixed="right" width="190">
         <template #default="{ row }">
-          <el-button link type="primary" @click="openDetail(row)">查看</el-button>
-          <el-button link type="primary" @click="openEditDialog(row)">编辑</el-button>
-          <el-button link type="danger" :loading="deletingId === row.id" @click="handleDelete(row)">删除</el-button>
+          <el-button link type="primary" @click="openDetail(row as ProductView)">查看</el-button>
+          <el-button link type="primary" @click="openEditDialog(row as ProductView)">编辑</el-button>
+          <el-button link type="danger" :loading="deletingId === row.id" @click="handleDelete(row as ProductView)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -583,7 +583,8 @@ onMounted(() => {
 .query { margin-bottom: 8px; }
 .import-mode { margin-bottom: 12px; }
 .import-tip { color: var(--el-text-color-secondary); font-size: 13px; margin: 8px 0 12px; }
-.template-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }\n.txt-toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.template-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.txt-toolbar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
 .mapping-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
 .mapping-grid :deep(.el-form-item) { margin-bottom: 10px; }
 .required-mark { color: var(--el-color-danger); margin-left: 8px; font-size: 12px; }
