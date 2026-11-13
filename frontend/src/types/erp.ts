@@ -90,6 +90,10 @@ export type StockView = {
   id: Id
   warehouseId: Id
   productId: Id
+  colorCode: string
+  batchNo: string
+  grade: string
+  binName: string
   quantity: number
   lockedQty: number
 }
@@ -97,6 +101,10 @@ export type StockView = {
 export type PurchaseItemView = {
   id: Id | null
   productId: Id
+  colorCode: string
+  batchNo: string
+  grade: string
+  binName: string
   qty: number
   price: number
   amount: number
@@ -115,6 +123,10 @@ export type PurchaseView = {
 
 export type CreatePurchaseItemRequest = {
   productId: number | string
+  colorCode?: string
+  batchNo?: string
+  grade?: string
+  binName?: string
   qty: number
   price: number
 }
@@ -136,6 +148,7 @@ export type OutboundItemView = {
   productName: string | null
   brand: string | null
   spec: string | null
+  colorCode: string | null
   grade: string | null
   batchNo: string | null
   setsQty: number
@@ -201,6 +214,7 @@ export type CreateOutboundItemRequest = {
   productName?: string
   brand?: string
   spec?: string
+  colorCode?: string
   grade?: string
   batchNo?: string
   setsQty?: number
