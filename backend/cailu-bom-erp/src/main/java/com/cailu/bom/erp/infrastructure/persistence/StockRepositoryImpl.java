@@ -49,7 +49,7 @@ public class StockRepositoryImpl implements StockRepository {
                 .eq(ErpStockDO::getBatchNo, normalize(batchNo))
                 .eq(ErpStockDO::getGrade, normalize(grade))
                 .eq(ErpStockDO::getBinName, normalize(binName))
-                .last("LIMIT 1"));
+                .last("LIMIT 1 FOR UPDATE"));
         return Optional.ofNullable(row).map(this::toDomain);
     }
 
