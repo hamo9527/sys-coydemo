@@ -225,7 +225,7 @@ export type CreateOutboundItemRequest = {
   stdPrice?: number
   discount?: number
   price: number
-  warehouseId?: number | string
+  warehouseId: number | string
   warehouseCode?: string
   warehouseName?: string
   binName?: string
