@@ -61,7 +61,7 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PurchaseView inbound(Long id, InboundPurchaseCommand command) {
-        PurchaseOrder order = purchaseOrderRepository.findById(id)
+        PurchaseOrder order = purchaseOrderRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new BusinessException("purchase order not found", 404));
         PurchaseOrder completed;
         try {
