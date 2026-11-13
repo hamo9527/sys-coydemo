@@ -54,3 +54,27 @@ backend/
 
 - MyBatis-Plus 使用官方 `mybatis-plus-bom` + `mybatis-plus-jsqlparser`（分页必需）
 - JWT / RabbitMQ 依赖按需引入，避免空依赖
+
+## 库存开发分支数据库隔离
+
+本分支默认连接独立数据库 `cailu_bom_inventory`，后端默认端口为 `8081`；不要把本分支的迁移脚本执行到原分支使用的 `cailu_bom`。
+
+首次初始化（在仓库根目录执行，MySQL 服务需已启动）：
+
+```powershell
+mysql -h 127.0.0.1 -P 3306 -u root -p < backend/sql/V20260813__init.sql
+mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend/sql/V20260814__outbound.sql
+mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend/sql/V20261104__expand_erp_product_profile.sql
+mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend/sql/V20261112__erp_color_modes_and_warehouse_api.sql
+```
+
+启动本分支后端时，默认值已经指向 `cailu_bom_inventory:3306` 和 `8081`。如需显式指定连接参数，可在 PowerShell 中设置：
+
+```powershell
+$env:MYSQL_HOST="127.0.0.1"
+$env:MYSQL_PORT="3306"
+$env:MYSQL_DB="cailu_bom_inventory"
+$env:SERVER_PORT="8081"
+```
+
+原分支仍使用 `cailu_bom` 和 `8080`。两个分支可以共用同一个 MySQL 服务，但必须使用不同数据库名和后端端口。以上 SQL 只初始化库存开发库，不会复制或修改原库中的数据。
