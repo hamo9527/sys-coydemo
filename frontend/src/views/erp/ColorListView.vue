@@ -11,7 +11,7 @@
       <el-table-column prop="manufacturerColorCode" label="厂家色号" width="140" /><el-table-column prop="shortName" label="简称" width="110" />
       <el-table-column label="状态" width="90"><template #default="{ row }">{{ row.status === 1 ? '启用' : '停用' }}</template></el-table-column>
       <el-table-column label="操作" width="150" fixed="right"><template #default="{ row }">
-        <el-button link type="primary" @click="openEdit(row)">编辑</el-button><el-button link type="danger" @click="remove(row)">删除</el-button>
+        <el-button link type="primary" @click="openEdit(row as ColorView)">编辑</el-button><el-button link type="danger" @click="remove(row as ColorView)">删除</el-button>
       </template></el-table-column>
     </el-table>
     <el-alert class="tip" type="info" :closable="false" title="内部色号编码由本系统维护；厂家色号单独保存，避免不同品牌的厂家编码冲突。" />
