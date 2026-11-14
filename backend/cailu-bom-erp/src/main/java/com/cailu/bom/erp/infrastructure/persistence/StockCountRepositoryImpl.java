@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,8 +29,18 @@ public class StockCountRepositoryImpl implements StockCountRepository {
                 new Page<>(current, pageSize),
                 new LambdaQueryWrapper<ErpStockCountDO>().orderByDesc(ErpStockCountDO::getBillDate)
                         .orderByDesc(ErpStockCountDO::getId));
+        List<Long> countIds = result.getRecords().stream().map(ErpStockCountDO::getId).toList();
+        Map<Long, List<StockCountItem>> itemsByCountId = countIds.isEmpty() ? Map.of()
+                : itemMapper.selectList(new LambdaQueryWrapper<ErpStockCountItemDO>()
+                        .in(ErpStockCountItemDO::getCountId, countIds)
+                        .orderByAsc(ErpStockCountItemDO::getId))
+                .stream()
+                .collect(Collectors.groupingBy(ErpStockCountItemDO::getCountId,
+                        Collectors.mapping(this::toDomainItem, Collectors.toList())));
         return new PageResult<>(
-                result.getRecords().stream().map(row -> toDomain(row, loadItems(row.getId()))).toList(),
+                result.getRecords().stream()
+                        .map(row -> toDomain(row, itemsByCountId.getOrDefault(row.getId(), List.of())))
+                        .toList(),
                 result.getTotal(), result.getCurrent(), result.getSize());
     }
 
@@ -107,10 +119,14 @@ public class StockCountRepositoryImpl implements StockCountRepository {
                         .eq(ErpStockCountItemDO::getCountId, countId)
                         .orderByAsc(ErpStockCountItemDO::getId))
                 .stream()
-                .map(row -> new StockCountItem(row.getId(), row.getProductId(), row.getColorCode(),
-                        row.getBatchNo(), row.getGrade(), row.getBinName(), row.getBookQty(),
-                        row.getActualQty(), row.getDifferenceQty()))
+                .map(this::toDomainItem)
                 .toList();
+    }
+
+    private StockCountItem toDomainItem(ErpStockCountItemDO row) {
+        return new StockCountItem(row.getId(), row.getProductId(), row.getColorCode(),
+                row.getBatchNo(), row.getGrade(), row.getBinName(), row.getBookQty(),
+                row.getActualQty(), row.getDifferenceQty());
     }
 
     private StockCount toDomain(ErpStockCountDO row, List<StockCountItem> items) {
