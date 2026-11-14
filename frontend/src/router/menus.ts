@@ -169,7 +169,7 @@ export const sideMenus: SideMenuItem[] = [
           { title: '拆分单', path: '/placeholder/stock/split' },
           { title: '组装单', path: '/placeholder/stock/assemble' },
           { title: '报废单', path: '/placeholder/stock/scrap' },
-          { title: '盘点单', path: '/placeholder/stock/count' },
+          { title: '盘点单', path: '/erp/stock/count', ready: true },
           { title: '成本调拨单', path: '/placeholder/stock/cost-transfer' },
           { title: '数量拆分单', path: '/placeholder/stock/qty-split' },
           { title: '数量组装单', path: '/placeholder/stock/qty-assemble' },
