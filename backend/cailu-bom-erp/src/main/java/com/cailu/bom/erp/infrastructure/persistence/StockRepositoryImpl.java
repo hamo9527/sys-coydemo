@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,6 +60,14 @@ public class StockRepositoryImpl implements StockRepository {
     }
 
     @Override
+    public List<Stock> balancesAtDate(Long warehouseId, LocalDate billDate) {
+        return erpStockLedgerMapper.selectBalancesAtDate(warehouseId, billDate).stream()
+                .map(row -> new Stock(null, row.warehouseId(), row.productId(), row.colorCode(),
+                        row.batchNo(), row.grade(), row.binName(), row.quantity(), BigDecimal.ZERO))
+                .toList();
+    }
+
+    @Override
     public Stock save(Stock stock) {
         ErpStockDO row = new ErpStockDO();
         row.setId(stock.getId());
@@ -81,7 +90,7 @@ public class StockRepositoryImpl implements StockRepository {
     @Override
     public Stock increase(Long warehouseId, Long productId, String colorCode, String batchNo,
                           String grade, String binName, BigDecimal qty,
-                          String bizType, Long bizId, String remark) {
+                          String bizType, Long bizId, LocalDate bizDate, String remark) {
         if (qty == null || qty.signum() <= 0) {
             throw new IllegalArgumentException("increase qty must be positive");
         }
@@ -94,7 +103,7 @@ public class StockRepositoryImpl implements StockRepository {
                         BigDecimal.ZERO, BigDecimal.ZERO));
         Stock updated = save(current.increase(qty));
         appendLedger(warehouseId, productId, color, batch, productGrade, bin,
-                bizType, bizId, qty, updated.getQuantity(), remark);
+                bizType, bizId, bizDate, qty, updated.getQuantity(), remark);
         return updated;
     }
 
@@ -113,12 +122,12 @@ public class StockRepositoryImpl implements StockRepository {
                 .orElseThrow(() -> new IllegalArgumentException("stock not found for selected dimensions"));
         Stock updated = save(current.decrease(qty));
         appendLedger(warehouseId, productId, color, batch, productGrade, bin,
-                bizType, bizId, qty.negate(), updated.getQuantity(), remark);
+                bizType, bizId, bizDate, qty.negate(), updated.getQuantity(), remark);
         return updated;
     }
 
     private void appendLedger(Long warehouseId, Long productId, String colorCode, String batchNo,
-                              String grade, String binName, String bizType, Long bizId,
+                              String grade, String binName, String bizType, Long bizId, LocalDate bizDate,
                               BigDecimal changeQty, BigDecimal balanceQty, String remark) {
         ErpStockLedgerDO ledger = new ErpStockLedgerDO();
         ledger.setWarehouseId(warehouseId);
@@ -128,6 +137,7 @@ public class StockRepositoryImpl implements StockRepository {
         ledger.setGrade(grade);
         ledger.setBinName(binName);
         ledger.setBizType(bizType);
+        ledger.setBizDate(bizDate);
         ledger.setBizId(bizId);
         ledger.setChangeQty(changeQty);
         ledger.setBalanceQty(balanceQty);
