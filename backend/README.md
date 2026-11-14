@@ -42,6 +42,11 @@ backend/
 | GET | `/api/erp/products/{id}` | 商品详情 |
 | GET | `/api/erp/stocks` | 按仓库、商品和库存维度查询库存 |
 | GET | `/api/erp/stocks/color-codes/suggestions` | 查询商品历史使用色号（入库输入联想） |
+| GET | `/api/erp/stock-counts` | 盘点单分页列表 |
+| POST | `/api/erp/stock-counts` | 按仓库和开单日期生成账面库存快照 |
+| GET | `/api/erp/stock-counts/{id}` | 盘点单详情 |
+| PUT | `/api/erp/stock-counts/{id}` | 保存实盘数量 |
+| POST | `/api/erp/stock-counts/{id}/confirmations` | 确认盘点并按差额调整库存 |
 | GET | `/api/erp/purchases` | 采购单分页 |
 | POST | `/api/erp/purchases` | 创建采购草稿 |
 | GET | `/api/erp/purchases/{id}` | 采购详情 |
@@ -68,6 +73,7 @@ cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql
 cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql\\V20261104__expand_erp_product_profile.sql"
 cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql\\V20261112__erp_color_modes_and_warehouse_api.sql"
 cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql\\V20261113__stock_inventory_dimensions.sql"
+cmd /c "mysql -h 127.0.0.1 -P 3306 -u root -p cailu_bom_inventory < backend\\sql\\V20261114__stock_count.sql"
 ```
 
 启动本分支后端时，默认值已经指向 `cailu_bom_inventory:3306` 和 `8081`。如需显式指定连接参数，可在 PowerShell 中设置：
