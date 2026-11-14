@@ -64,6 +64,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '商品库存维度配置', module: 'master' },
       },
       {
+        path: 'erp/stock/count',
+        name: 'ErpStockCount',
+        component: () => import('@/views/erp/StockCountListView.vue'),
+        meta: { title: '盘点单', module: 'stock' },
+      },
+      {
         path: 'erp/stock',
         name: 'ErpStock',
         component: () => import('@/views/erp/StockListView.vue'),
