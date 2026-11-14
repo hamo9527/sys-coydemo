@@ -110,7 +110,7 @@ public class StockRepositoryImpl implements StockRepository {
     @Override
     public Stock decrease(Long warehouseId, Long productId, String colorCode, String batchNo,
                           String grade, String binName, BigDecimal qty,
-                          String bizType, Long bizId, String remark) {
+                          String bizType, Long bizId, LocalDate bizDate, String remark) {
         if (qty == null || qty.signum() <= 0) {
             throw new IllegalArgumentException("decrease qty must be positive");
         }
