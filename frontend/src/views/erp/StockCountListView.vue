@@ -254,11 +254,15 @@ async function handleConfirm() {
     ElMessage.warning('请填写全部商品的实盘数量')
     return
   }
-  await ElMessageBox.confirm(
-    '确认后系统将按实盘数量与账面数量的差额调整库存，并生成盘点盈亏流水。此操作不可撤销。',
-    '确认盘点',
-    { type: 'warning', confirmButtonText: '确认调整', cancelButtonText: '再检查一下' },
-  )
+  try {
+    await ElMessageBox.confirm(
+      '确认后系统将按实盘数量与账面数量的差额调整库存，并生成盘点盈亏流水。此操作不可撤销。',
+      '确认盘点',
+      { type: 'warning', confirmButtonText: '确认调整', cancelButtonText: '再检查一下' },
+    )
+  } catch {
+    return
+  }
   confirming.value = true
   try {
     await updateStockCount(activeCount.value.id, {
