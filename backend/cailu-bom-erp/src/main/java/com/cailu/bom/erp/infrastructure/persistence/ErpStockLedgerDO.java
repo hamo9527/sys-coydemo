@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -33,6 +34,8 @@ public class ErpStockLedgerDO {
     private String binName;
 
     private String bizType;
+
+    private LocalDate bizDate;
 
     private Long bizId;
 
