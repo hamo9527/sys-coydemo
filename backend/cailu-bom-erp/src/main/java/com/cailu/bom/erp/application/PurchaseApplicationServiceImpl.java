@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -103,6 +104,7 @@ public class PurchaseApplicationServiceImpl implements PurchaseApplicationServic
                         item.getQty(),
                         BIZ_TYPE_PURCHASE_INBOUND,
                         order.getId(),
+                        LocalDate.now(),
                         order.getOrderNo());
             } catch (IllegalArgumentException ex) {
                 throw new BusinessException(ex.getMessage());
