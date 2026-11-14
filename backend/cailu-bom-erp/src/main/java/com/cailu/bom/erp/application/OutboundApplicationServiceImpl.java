@@ -121,6 +121,7 @@ public class OutboundApplicationServiceImpl implements OutboundApplicationServic
                         item.getQty(),
                         BIZ_TYPE_SALES_OUTBOUND,
                         order.getId(),
+                        order.getBillDate(),
                         order.getBillNo());
             } catch (IllegalArgumentException ex) {
                 throw new BusinessException(ex.getMessage());
