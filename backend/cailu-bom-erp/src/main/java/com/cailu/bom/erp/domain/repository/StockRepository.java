@@ -27,5 +27,5 @@ public interface StockRepository {
 
     Stock decrease(Long warehouseId, Long productId, String colorCode, String batchNo,
                    String grade, String binName, BigDecimal qty,
-                   String bizType, Long bizId, String remark);
+                   String bizType, Long bizId, LocalDate bizDate, String remark);
 }
