@@ -86,6 +86,26 @@ export type ProductImportResult = {
   errors: string[]
 }
 
+export type StockCountView = {
+  id: Id
+  billNo: string
+  warehouseId: Id
+  billDate: string
+  status: 'draft' | 'confirmed'
+  remark: string | null
+  items: Array<{
+    id: Id
+    productId: Id
+    colorCode: string
+    batchNo: string
+    grade: string
+    binName: string
+    bookQty: number
+    actualQty: number | null
+    differenceQty: number | null
+  }>
+}
+
 export type StockView = {
   id: Id
   warehouseId: Id
