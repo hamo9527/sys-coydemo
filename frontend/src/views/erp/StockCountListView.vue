@@ -123,8 +123,8 @@
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
         <template v-if="activeCount?.status === 'draft'">
-          <el-button :loading="saving" @click="saveActuals">保存实盘数量</el-button>
-          <el-button type="primary" :loading="confirming" @click="handleConfirm">确认盘点并调整库存</el-button>
+          <el-button :loading="saving" :disabled="activeCount.items.length === 0" @click="saveActuals">保存实盘数量</el-button>
+          <el-button type="primary" :loading="confirming" :disabled="activeCount.items.length === 0" @click="handleConfirm">确认盘点并调整库存</el-button>
         </template>
       </template>
     </el-dialog>
