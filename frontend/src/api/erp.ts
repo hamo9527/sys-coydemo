@@ -11,6 +11,7 @@ import type {
   ProductImportResult,
   PurchaseView,
   StockView,
+  StockCountView,
 } from '@/types/erp'
 
 export function listProducts(params: { keyword?: string; page?: number; size?: number }) {
@@ -107,3 +108,23 @@ export function unbindProductColor(id: string | number, colorId: string | number
 
 export function updateColor(id: string | number, data: ColorRequest) { return http.put<ColorView>(`/erp/colors/${id}`, data) }
 export function deleteColor(id: string | number) { return http.delete<void>(`/erp/colors/${id}`) }
+
+export function listStockCounts(params: { page?: number; size?: number }) {
+  return http.get<PageResult<StockCountView>>('/erp/stock-counts', { params })
+}
+
+export function getStockCount(id: string | number) {
+  return http.get<StockCountView>(`/erp/stock-counts/${id}`)
+}
+
+export function createStockCount(data: { warehouseId: string | number; billDate: string; remark?: string }) {
+  return http.post<StockCountView>('/erp/stock-counts', data)
+}
+
+export function updateStockCount(id: string | number, data: { items: Array<{ itemId: string | number; actualQty: number }> }) {
+  return http.put<StockCountView>(`/erp/stock-counts/${id}`, data)
+}
+
+export function confirmStockCount(id: string | number) {
+  return http.post<StockCountView>(`/erp/stock-counts/${id}/confirmations`)
+}
