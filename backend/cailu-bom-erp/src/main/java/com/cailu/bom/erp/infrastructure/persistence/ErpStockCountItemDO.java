@@ -31,6 +31,8 @@ public class ErpStockCountItemDO extends BaseEntity {
 
     private String binName;
 
+    private BigDecimal costPrice;
+
     private BigDecimal bookQty;
 
     private BigDecimal actualQty;

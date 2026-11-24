@@ -52,7 +52,7 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
         List<StockCountItem> items = stockRepository.balancesAtDate(command.warehouseId(), command.billDate())
                 .stream()
                 .map(stock -> new StockCountItem(null, stock.getProductId(), stock.getColorCode(),
-                        stock.getBatchNo(), stock.getGrade(), stock.getBinName(),
+                        stock.getBatchNo(), stock.getGrade(), stock.getBinName(), BigDecimal.ZERO,
                         stock.getQuantity(), null, null))
                 .toList();
         String billNo = nextBillNo(command.billDate());
@@ -133,8 +133,8 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
     private StockCountView toView(StockCount count) {
         List<StockCountView.Item> items = count.items().stream()
                 .map(item -> new StockCountView.Item(item.id(), item.productId(), item.colorCode(),
-                        item.batchNo(), item.grade(), item.binName(), item.bookQty(),
-                        item.actualQty(), item.differenceQty()))
+                        item.batchNo(), item.grade(), item.binName(), item.costPrice(), item.bookQty(),
+                        item.actualQty(), item.differenceQty(), item.differenceAmount()))
                 .toList();
         return new StockCountView(count.id(), count.billNo(), count.warehouseId(),
                 count.billDate(), count.status(), count.remark(), items);

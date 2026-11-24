@@ -20,9 +20,11 @@ public record StockCountView(
             String batchNo,
             String grade,
             String binName,
+            BigDecimal costPrice,
             BigDecimal bookQty,
             BigDecimal actualQty,
-            BigDecimal differenceQty
+            BigDecimal differenceQty,
+            BigDecimal differenceAmount
     ) {
     }
 }

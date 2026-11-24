@@ -82,6 +82,7 @@ public class StockCountRepositoryImpl implements StockCountRepository {
             itemRow.setBatchNo(item.batchNo());
             itemRow.setGrade(item.grade());
             itemRow.setBinName(item.binName());
+            itemRow.setCostPrice(item.costPrice());
             itemRow.setBookQty(item.bookQty());
             itemRow.setActualQty(item.actualQty());
             itemRow.setDifferenceQty(item.differenceQty());
@@ -125,8 +126,8 @@ public class StockCountRepositoryImpl implements StockCountRepository {
 
     private StockCountItem toDomainItem(ErpStockCountItemDO row) {
         return new StockCountItem(row.getId(), row.getProductId(), row.getColorCode(),
-                row.getBatchNo(), row.getGrade(), row.getBinName(), row.getBookQty(),
-                row.getActualQty(), row.getDifferenceQty());
+                row.getBatchNo(), row.getGrade(), row.getBinName(), row.getCostPrice(),
+                row.getBookQty(), row.getActualQty(), row.getDifferenceQty());
     }
 
     private StockCount toDomain(ErpStockCountDO row, List<StockCountItem> items) {
