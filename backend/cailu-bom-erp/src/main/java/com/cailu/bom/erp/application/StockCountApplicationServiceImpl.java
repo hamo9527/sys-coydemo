@@ -65,11 +65,7 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
         if (!"draft".equals(count.status())) {
             throw new BusinessException("只有草稿盘点单可以修改");
         }
-        LocalDate latestDate = stockRepository.latestLedgerDate(count.warehouseId());
-        if (latestDate != null && count.billDate().isBefore(latestDate)) {
-            throw new BusinessException("该盘点日期早于仓库最新库存业务日期 " + latestDate
-                    + "，当前版本不支持历史库存回溯，请调整开单日期后再保存");
-        }
+        ensureBillDateNotFuture(count.billDate());
 
         List<Stock> balances = stockRepository.balancesAtDate(count.warehouseId(), count.billDate());
         Set<Dimension> dimensions = new HashSet<>();
@@ -103,11 +99,7 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
         if (count.items().isEmpty()) {
             throw new BusinessException("盘点单没有明细，无法确认");
         }
-        LocalDate latestDate = stockRepository.latestLedgerDate(count.warehouseId());
-        if (latestDate != null && count.billDate().isBefore(latestDate)) {
-            throw new BusinessException("该盘点日期早于仓库最新库存业务日期 " + latestDate
-                    + "，当前版本不支持历史库存回溯，不能过账");
-        }
+        ensureBillDateNotFuture(count.billDate());
         for (StockCountItem item : count.items()) {
             if (item.actualQty() == null) {
                 throw new BusinessException("请先填写全部商品的实盘数量");
@@ -128,6 +120,12 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
             }
         }
         return toView(stockCountRepository.updateStatus(id, "confirmed"));
+    }
+
+    private void ensureBillDateNotFuture(LocalDate billDate) {
+        if (billDate.isAfter(LocalDate.now())) {
+            throw new BusinessException("盘点日期不能晚于今天");
+        }
     }
 
     private boolean sameDimension(Stock stock, Dimension dimension) {

@@ -37,7 +37,8 @@
     <el-dialog v-model="createVisible" title="新建盘点单" width="480px" :close-on-click-modal="false">
       <el-form label-width="90px">
         <el-form-item label="开单日期" required>
-          <el-date-picker v-model="createForm.billDate" type="date" value-format="YYYY-MM-DD" />
+          <el-date-picker v-model="createForm.billDate" type="date" value-format="YYYY-MM-DD"
+            :disabled-date="disableFutureDate" />
         </el-form-item>
         <el-form-item label="盘点仓库" required>
           <el-select v-model="createForm.warehouseId" placeholder="请选择仓库" class="full">
@@ -182,6 +183,12 @@ const total = ref(0)
 function today() {
   const date = new Date()
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function disableFutureDate(date: Date) {
+  const todayDate = new Date()
+  todayDate.setHours(0, 0, 0, 0)
+  return date.getTime() > todayDate.getTime()
 }
 
 const createForm = reactive({ warehouseId: '' as string | number, billDate: today(), remark: '' })
