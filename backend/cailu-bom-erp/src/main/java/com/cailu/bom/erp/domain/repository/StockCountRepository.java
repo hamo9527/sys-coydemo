@@ -2,8 +2,8 @@ package com.cailu.bom.erp.domain.repository;
 
 import com.cailu.bom.common.api.PageResult;
 import com.cailu.bom.erp.domain.model.StockCount;
+import com.cailu.bom.erp.domain.model.StockCountItem;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,10 +19,7 @@ public interface StockCountRepository {
 
     StockCount save(StockCount stockCount);
 
-    void updateActualQuantities(Long countId, List<ActualQuantity> quantities);
+    void replaceItems(Long countId, Long warehouseId, List<StockCountItem> items);
 
     StockCount updateStatus(Long id, String status);
-
-    record ActualQuantity(Long itemId, BigDecimal actualQty) {
-    }
 }

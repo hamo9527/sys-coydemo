@@ -33,11 +33,8 @@ public class StockRepositoryImpl implements StockRepository {
         }
         wrapper.orderByDesc(ErpStockDO::getId);
         Page<ErpStockDO> result = erpStockMapper.selectPage(new Page<>(current, pageSize), wrapper);
-        return new PageResult<>(
-                result.getRecords().stream().map(this::toDomain).toList(),
-                result.getTotal(),
-                result.getCurrent(),
-                result.getSize());
+        return new PageResult<>(result.getRecords().stream().map(this::toDomain).toList(),
+                result.getTotal(), result.getCurrent(), result.getSize());
     }
 
     @Override
@@ -65,6 +62,11 @@ public class StockRepositoryImpl implements StockRepository {
                 .map(row -> new Stock(null, row.warehouseId(), row.productId(), row.colorCode(),
                         row.batchNo(), row.grade(), row.binName(), row.quantity(), BigDecimal.ZERO))
                 .toList();
+    }
+
+    @Override
+    public LocalDate latestLedgerDate(Long warehouseId) {
+        return erpStockLedgerMapper.selectLatestBizDate(warehouseId);
     }
 
     @Override

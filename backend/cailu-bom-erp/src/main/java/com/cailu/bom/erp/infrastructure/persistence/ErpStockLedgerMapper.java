@@ -29,4 +29,7 @@ public interface ErpStockLedgerMapper extends BaseMapper<ErpStockLedgerDO> {
     List<StockBalanceAtDateRow> selectBalancesAtDate(
             @Param("warehouseId") Long warehouseId,
             @Param("billDate") LocalDate billDate);
+
+    @Select("SELECT MAX(biz_date) FROM erp_stock_ledger WHERE warehouse_id = #{warehouseId}")
+    LocalDate selectLatestBizDate(@Param("warehouseId") Long warehouseId);
 }

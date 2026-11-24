@@ -14,11 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,18 +48,12 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
         if (command.billDate().isAfter(LocalDate.now())) {
             throw new BusinessException("盘点日期不能晚于今天");
         }
-        List<StockCountItem> items = stockRepository.balancesAtDate(command.warehouseId(), command.billDate())
-                .stream()
-                .map(stock -> new StockCountItem(null, stock.getProductId(), stock.getColorCode(),
-                        stock.getBatchNo(), stock.getGrade(), stock.getBinName(), BigDecimal.ZERO,
-                        stock.getQuantity(), null, null))
-                .toList();
         String billNo = nextBillNo(command.billDate());
         while (stockCountRepository.findByBillNo(billNo).isPresent()) {
             billNo = nextBillNo(command.billDate());
         }
         StockCount count = new StockCount(null, billNo, command.warehouseId(), command.billDate(),
-                "draft", command.remark(), items);
+                "draft", command.remark(), List.of());
         return toView(stockCountRepository.save(count));
     }
 
@@ -72,25 +65,30 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
         if (!"draft".equals(count.status())) {
             throw new BusinessException("只有草稿盘点单可以修改");
         }
-        if (command.items().size() != count.items().size()) {
-            throw new BusinessException("实盘明细数量与盘点单不一致");
+        LocalDate latestDate = stockRepository.latestLedgerDate(count.warehouseId());
+        if (latestDate != null && count.billDate().isBefore(latestDate)) {
+            throw new BusinessException("该盘点日期早于仓库最新库存业务日期 " + latestDate
+                    + "，当前版本不支持历史库存回溯，请调整开单日期后再保存");
         }
-        Map<Long, UpdateStockCountCommand.Item> actuals = command.items().stream()
-                .collect(Collectors.toMap(UpdateStockCountCommand.Item::itemId, Function.identity(),
-                        (first, second) -> {
-                            throw new BusinessException("盘点明细存在重复行");
-                        }));
-        List<StockCountRepository.ActualQuantity> quantities = count.items().stream().map(item -> {
-            UpdateStockCountCommand.Item actual = actuals.remove(item.id());
-            if (actual == null) {
-                throw new BusinessException("盘点明细缺少实盘数量");
+
+        List<Stock> balances = stockRepository.balancesAtDate(count.warehouseId(), count.billDate());
+        Set<Dimension> dimensions = new HashSet<>();
+        List<StockCountItem> items = command.items().stream().map(input -> {
+            Dimension dimension = new Dimension(input.productId(), normalize(input.colorCode()),
+                    normalize(input.batchNo()), normalize(input.grade()), normalize(input.binName()));
+            if (!dimensions.add(dimension)) {
+                throw new BusinessException("盘点明细存在重复商品维度：" + input.productId());
             }
-            return new StockCountRepository.ActualQuantity(item.id(), actual.actualQty());
+            BigDecimal bookQty = balances.stream()
+                    .filter(stock -> sameDimension(stock, dimension))
+                    .map(Stock::getQuantity)
+                    .findFirst().orElse(BigDecimal.ZERO);
+            BigDecimal difference = input.actualQty() == null ? null : input.actualQty().subtract(bookQty);
+            return new StockCountItem(null, input.productId(), dimension.colorCode(), dimension.batchNo(),
+                    dimension.grade(), dimension.binName(), input.costPrice(), bookQty, input.actualQty(), difference);
         }).toList();
-        if (!actuals.isEmpty()) {
-            throw new BusinessException("盘点明细包含无效行");
-        }
-        stockCountRepository.updateActualQuantities(id, quantities);
+
+        stockCountRepository.replaceItems(id, count.warehouseId(), items);
         return get(id);
     }
 
@@ -101,6 +99,14 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
                 .orElseThrow(() -> new BusinessException("盘点单不存在", 404));
         if (!"draft".equals(count.status())) {
             throw new BusinessException("只有草稿盘点单可以确认");
+        }
+        if (count.items().isEmpty()) {
+            throw new BusinessException("盘点单没有明细，无法确认");
+        }
+        LocalDate latestDate = stockRepository.latestLedgerDate(count.warehouseId());
+        if (latestDate != null && count.billDate().isBefore(latestDate)) {
+            throw new BusinessException("该盘点日期早于仓库最新库存业务日期 " + latestDate
+                    + "，当前版本不支持历史库存回溯，不能过账");
         }
         for (StockCountItem item : count.items()) {
             if (item.actualQty() == null) {
@@ -124,6 +130,18 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
         return toView(stockCountRepository.updateStatus(id, "confirmed"));
     }
 
+    private boolean sameDimension(Stock stock, Dimension dimension) {
+        return stock.getProductId().equals(dimension.productId())
+                && normalize(stock.getColorCode()).equals(dimension.colorCode())
+                && normalize(stock.getBatchNo()).equals(dimension.batchNo())
+                && normalize(stock.getGrade()).equals(dimension.grade())
+                && normalize(stock.getBinName()).equals(dimension.binName());
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
+    }
+
     private String nextBillNo(LocalDate billDate) {
         String date = billDate.format(DateTimeFormatter.BASIC_ISO_DATE);
         int sequence = ThreadLocalRandom.current().nextInt(1000, 9999);
@@ -138,5 +156,8 @@ public class StockCountApplicationServiceImpl implements StockCountApplicationSe
                 .toList();
         return new StockCountView(count.id(), count.billNo(), count.warehouseId(),
                 count.billDate(), count.status(), count.remark(), items);
+    }
+
+    private record Dimension(Long productId, String colorCode, String batchNo, String grade, String binName) {
     }
 }

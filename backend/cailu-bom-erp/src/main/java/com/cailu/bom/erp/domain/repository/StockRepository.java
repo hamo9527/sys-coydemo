@@ -19,6 +19,8 @@ public interface StockRepository {
 
     List<Stock> balancesAtDate(Long warehouseId, LocalDate billDate);
 
+    LocalDate latestLedgerDate(Long warehouseId);
+
     Stock save(Stock stock);
 
     Stock increase(Long warehouseId, Long productId, String colorCode, String batchNo,

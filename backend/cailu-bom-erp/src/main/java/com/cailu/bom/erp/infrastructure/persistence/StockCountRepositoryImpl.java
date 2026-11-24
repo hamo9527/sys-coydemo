@@ -37,11 +37,9 @@ public class StockCountRepositoryImpl implements StockCountRepository {
                 .stream()
                 .collect(Collectors.groupingBy(ErpStockCountItemDO::getCountId,
                         Collectors.mapping(this::toDomainItem, Collectors.toList())));
-        return new PageResult<>(
-                result.getRecords().stream()
-                        .map(row -> toDomain(row, itemsByCountId.getOrDefault(row.getId(), List.of())))
-                        .toList(),
-                result.getTotal(), result.getCurrent(), result.getSize());
+        return new PageResult<>(result.getRecords().stream()
+                .map(row -> toDomain(row, itemsByCountId.getOrDefault(row.getId(), List.of())))
+                .toList(), result.getTotal(), result.getCurrent(), result.getSize());
     }
 
     @Override
@@ -73,34 +71,28 @@ public class StockCountRepositoryImpl implements StockCountRepository {
         row.setStatus(stockCount.status());
         row.setRemark(stockCount.remark());
         countMapper.insert(row);
-        for (StockCountItem item : stockCount.items()) {
+        replaceItems(row.getId(), stockCount.warehouseId(), stockCount.items());
+        return toDomain(row, loadItems(row.getId()));
+    }
+
+    @Override
+    public void replaceItems(Long countId, Long warehouseId, List<StockCountItem> items) {
+        itemMapper.delete(new LambdaQueryWrapper<ErpStockCountItemDO>()
+                .eq(ErpStockCountItemDO::getCountId, countId));
+        for (StockCountItem item : items) {
             ErpStockCountItemDO itemRow = new ErpStockCountItemDO();
-            itemRow.setCountId(row.getId());
-            itemRow.setWarehouseId(stockCount.warehouseId());
+            itemRow.setCountId(countId);
+            itemRow.setWarehouseId(warehouseId);
             itemRow.setProductId(item.productId());
-            itemRow.setColorCode(item.colorCode());
-            itemRow.setBatchNo(item.batchNo());
-            itemRow.setGrade(item.grade());
-            itemRow.setBinName(item.binName());
+            itemRow.setColorCode(normalize(item.colorCode()));
+            itemRow.setBatchNo(normalize(item.batchNo()));
+            itemRow.setGrade(normalize(item.grade()));
+            itemRow.setBinName(normalize(item.binName()));
             itemRow.setCostPrice(item.costPrice());
             itemRow.setBookQty(item.bookQty());
             itemRow.setActualQty(item.actualQty());
             itemRow.setDifferenceQty(item.differenceQty());
             itemMapper.insert(itemRow);
-        }
-        return toDomain(row, loadItems(row.getId()));
-    }
-
-    @Override
-    public void updateActualQuantities(Long countId, List<ActualQuantity> quantities) {
-        for (ActualQuantity quantity : quantities) {
-            ErpStockCountItemDO row = itemMapper.selectById(quantity.itemId());
-            if (row == null || !countId.equals(row.getCountId())) {
-                throw new IllegalArgumentException("盘点明细不存在");
-            }
-            row.setActualQty(quantity.actualQty());
-            row.setDifferenceQty(quantity.actualQty().subtract(row.getBookQty()));
-            itemMapper.updateById(row);
         }
     }
 
@@ -119,9 +111,7 @@ public class StockCountRepositoryImpl implements StockCountRepository {
         return itemMapper.selectList(new LambdaQueryWrapper<ErpStockCountItemDO>()
                         .eq(ErpStockCountItemDO::getCountId, countId)
                         .orderByAsc(ErpStockCountItemDO::getId))
-                .stream()
-                .map(this::toDomainItem)
-                .toList();
+                .stream().map(this::toDomainItem).toList();
     }
 
     private StockCountItem toDomainItem(ErpStockCountItemDO row) {
@@ -133,5 +123,9 @@ public class StockCountRepositoryImpl implements StockCountRepository {
     private StockCount toDomain(ErpStockCountDO row, List<StockCountItem> items) {
         return new StockCount(row.getId(), row.getBillNo(), row.getWarehouseId(), row.getBillDate(),
                 row.getStatus(), row.getRemark(), items);
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim();
     }
 }

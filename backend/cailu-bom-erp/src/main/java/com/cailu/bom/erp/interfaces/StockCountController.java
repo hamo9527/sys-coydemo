@@ -38,22 +38,20 @@ public class StockCountController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<StockCountView>> create(
-            @Valid @RequestBody CreateStockCountRequest request) {
+    public ResponseEntity<ApiResponse<StockCountView>> create(@Valid @RequestBody CreateStockCountRequest request) {
         CreateStockCountCommand command = new CreateStockCountCommand(
                 request.warehouseId(), request.billDate(), request.remark());
         return ResponseEntity.ok(ApiResponse.success(stockCountApplicationService.create(command)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<StockCountView>> updateActualQuantities(
-            @PathVariable Long id,
-            @Valid @RequestBody UpdateStockCountRequest request) {
+    public ResponseEntity<ApiResponse<StockCountView>> updateItems(
+            @PathVariable Long id, @Valid @RequestBody UpdateStockCountRequest request) {
         UpdateStockCountCommand command = new UpdateStockCountCommand(request.items().stream()
-                .map(item -> new UpdateStockCountCommand.Item(item.itemId(), item.actualQty()))
+                .map(item -> new UpdateStockCountCommand.Item(item.productId(), item.colorCode(),
+                        item.batchNo(), item.grade(), item.binName(), item.costPrice(), item.actualQty()))
                 .toList());
-        return ResponseEntity.ok(ApiResponse.success(
-                stockCountApplicationService.updateActualQuantities(id, command)));
+        return ResponseEntity.ok(ApiResponse.success(stockCountApplicationService.updateActualQuantities(id, command)));
     }
 
     @PostMapping("/{id}/confirmations")
