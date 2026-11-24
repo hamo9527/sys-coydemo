@@ -86,6 +86,20 @@ export type ProductImportResult = {
   errors: string[]
 }
 
+export type StockCountItemView = {
+  id: Id
+  productId: Id
+  colorCode: string
+  batchNo: string
+  grade: string
+  binName: string
+  costPrice: number
+  bookQty: number
+  actualQty: number | null
+  differenceQty: number | null
+  differenceAmount: number | null
+}
+
 export type StockCountView = {
   id: Id
   billNo: string
@@ -93,17 +107,17 @@ export type StockCountView = {
   billDate: string
   status: 'draft' | 'confirmed'
   remark: string | null
-  items: Array<{
-    id: Id
-    productId: Id
-    colorCode: string
-    batchNo: string
-    grade: string
-    binName: string
-    bookQty: number
-    actualQty: number | null
-    differenceQty: number | null
-  }>
+  items: StockCountItemView[]
+}
+
+export type StockCountItemRequest = {
+  productId: Id | string
+  colorCode?: string
+  batchNo?: string
+  grade?: string
+  binName?: string
+  costPrice: number
+  actualQty: number | null
 }
 
 export type StockView = {
